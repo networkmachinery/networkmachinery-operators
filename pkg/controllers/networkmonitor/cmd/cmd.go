@@ -2,23 +2,26 @@ package cmd
 
 import (
 	"context"
-	controllercmd "github.com/gardener/gardener-extensions/pkg/controller/cmd"
-	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/install"
+
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers"
+
+	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkmonitor/controller"
+
+	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/install"
+	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
 	"github.com/spf13/cobra"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-
-
-const Name = "sflow"
-
-func NewSFlowControllerCmd(ctx context.Context){
-	sFlowOpts := SFlowControllerOptions{
+func NewNetworkMonitorCmd(ctx context.Context) *cobra.Command {
+	networkMonitorCmdOpts := NetworkMonitorCmdOptions{
+		ConfigFlags: genericclioptions.NewConfigFlags(),
 		LeaderElectionOptions: LeaderElectionOptions{
 			LeaderElection:          true,
 			LeaderElectionNamespace: "default",
-			LeaderElectionID:        controllers.LeaderElectionNameID(Name),
+			LeaderElectionID:        utils.LeaderElectionNameID(controller.Name),
 		},
 		ControllerOptions: ControllerOptions{
 			MaxConcurrentReconciles: 5,
@@ -26,31 +29,27 @@ func NewSFlowControllerCmd(ctx context.Context){
 	}
 
 	cmd := &cobra.Command{
-		Use: "sflow-controller-manager",
+		Use: "networkmonitor-controller",
 		Run: func(cmd *cobra.Command, args []string) {
-			config, err := sFlowOpts.ToRESTConfig()
-			if err != nil {
-				controllercmd.LogErrAndExit(err, "Error getting config")
-			}
-			config.UserAgent = Name
 			mgrOptions := &manager.Options{}
-			mgr, err := manager.New(config, *sFlowOpts.ApplyLeaderElection(mgrOptions))
+			mgr, err := manager.New(networkMonitorCmdOpts.InitConfig(), *networkMonitorCmdOpts.ApplyLeaderElection(mgrOptions))
 			if err != nil {
-				controllercmd.LogErrAndExit(err, "Could not instantiate manager")
+				utils.LogErrAndExit(err, "Could not instantiate manager")
 			}
-
 			if err := install.AddToScheme(mgr.GetScheme()); err != nil {
-				controllercmd.LogErrAndExit(err, "Could not update manager scheme")
+				utils.LogErrAndExit(err, "Could not update manager scheme")
 			}
 
-			if err := coreos.AddToManager(mgr); err != nil {
-				controllercmd.LogErrAndExit(err, "Could not add controller to manager")
+			if err := controllers.AddToManager(mgr); err != nil {
+				utils.LogErrAndExit(err, "Could not add controller to manager")
 			}
 
 			if err := mgr.Start(ctx.Done()); err != nil {
-				controllercmd.LogErrAndExit(err, "Error running manager")
+				utils.LogErrAndExit(err, "Error running manager")
 			}
 		},
 	}
-	sFlowOpts.AddFlags(cmd.Flags())
+
+	networkMonitorCmdOpts.AddFlags(cmd.Flags())
+	return cmd
 }

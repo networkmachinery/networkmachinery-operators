@@ -1,4 +1,3 @@
-package controllers
-
+package controller
 
 const Name = "sflow-controller"

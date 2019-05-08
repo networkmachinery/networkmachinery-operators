@@ -1,6 +1,8 @@
 ---
-apiVersion: networkmachinery.io/v1beta1
-kind: NetworkMonito
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkMonitor
+metadata:
+  name: myapp-pod
 Spec:
   flows:
     - name: flow-name
