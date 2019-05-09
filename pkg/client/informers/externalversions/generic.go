@@ -57,6 +57,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=networkmachinery.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("networkmonitors"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Networkmachinery().V1alpha1().NetworkMonitors().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("networknotifications"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Networkmachinery().V1alpha1().NetworkNotifications().Informer()}, nil
 
 	}
 

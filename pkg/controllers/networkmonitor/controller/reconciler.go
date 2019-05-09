@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
+	"time"
 
 	"gopkg.in/resty.v1"
 
@@ -86,26 +88,143 @@ func (r *ReconcileNetworkMonitor) delete(ctx context.Context, networkmonitor *v1
 }
 
 func (r *ReconcileNetworkMonitor) reconcile(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) (reconcile.Result, error) {
-	r.logger.Info("Adding finalizer", "NetworkMonitor", networkMonitor.Name)
+	r.logger.Info("Ensuring finalizer", "NetworkMonitor", networkMonitor.Name)
 	if err := apimachinery.EnsureFinalizer(ctx, r.client, FinalizerName, networkMonitor); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	err := installFlows(networkMonitor)
+	err := r.installFlows(networkMonitor)
 	if err != nil {
 		return apimachinery.ReconcileErr(err)
 	}
-	r.logger.Info("Installed flows successfully", "NetworkMonitor", networkMonitor.Name)
-	r.recorder.Event(networkMonitor, v1alpha1.EventTypeNormal, v1alpha1.EventTypeReconciliation, "Installed Flows")
 
-	err = installThresholds(networkMonitor)
+	err = r.installThresholds(networkMonitor)
 	if err != nil {
 		return apimachinery.ReconcileErr(err)
 	}
-	r.logger.Info("Installed thresholds successfully", "NetworkMonitor", networkMonitor.Name)
-	r.recorder.Event(networkMonitor, v1alpha1.EventTypeNormal, v1alpha1.EventTypeReconciliation, "Installed Thresholds")
 
-	return reconcile.Result{}, nil
+	_, err = r.checkEvents(networkMonitor)
+	if err != nil {
+		return apimachinery.ReconcileErr(err)
+	}
+	// this is to allow for polling fresh events out of sFlow
+	return reconcile.Result{
+		RequeueAfter: 60 * time.Second,
+	}, nil
+}
+
+func (r *ReconcileNetworkMonitor) installFlows(networkMonitor *v1alpha1.NetworkMonitor) error {
+	var sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
+
+	flowExists := func(flowName string) (bool, error) {
+		resp, err := resty.R().Get("http://" + sflowAddress + fmt.Sprintf("/flow/%s/json", flowName))
+		if err != nil {
+			return false, err
+		}
+		// TODO: check other 20X codes
+		if resp.StatusCode() != http.StatusOK {
+			return false, nil
+		}
+		return true, nil
+	}
+
+	installFlow := func(flow v1alpha1.Flow, nm *v1alpha1.NetworkMonitor) error {
+		jsonFlow, err := json.Marshal(flow)
+		if err != nil {
+			return err
+		}
+		url := fmt.Sprintf("http://%s/flow/%s/json", net.JoinHostPort(nm.Spec.MonitoringEndpoint.IP, nm.Spec.MonitoringEndpoint.Port), flow.Name)
+		fmt.Println(url)
+		_, err = resty.R().
+			SetHeader("Content-Type", "application/json").
+			SetBody(jsonFlow).
+			Put(url)
+
+		return err
+	}
+
+	for _, flow := range networkMonitor.Spec.Flows {
+		exists, err := flowExists(flow.Name)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			if err := installFlow(flow, networkMonitor); err != nil {
+				return err
+			}
+			r.logger.Info("Installed flow successfully", "NetworkMonitor", flow.Name)
+			r.recorder.Event(networkMonitor, v1alpha1.EventTypeNormal, v1alpha1.EventTypeReconciliation, fmt.Sprintf("Installed flow %s", flow.Name))
+		}
+	}
+
+	return nil
+}
+
+func (r *ReconcileNetworkMonitor) installThresholds(networkMonitor *v1alpha1.NetworkMonitor) error {
+	var sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
+	thresholdExists := func(thresholdName string) (bool, error) {
+		resp, err := resty.R().Get("http://" + sflowAddress + fmt.Sprintf("/threshold/%s/json", thresholdName))
+		if err != nil {
+			return false, err
+		}
+		// TODO: check other 20X codes
+		if resp.StatusCode() != http.StatusOK {
+			return false, nil
+		}
+		return true, nil
+	}
+
+	installThreshold := func(threshold v1alpha1.Threshold, nm *v1alpha1.NetworkMonitor) error {
+		jsonThreshold, err := json.Marshal(threshold)
+		if err != nil {
+			return err
+		}
+
+		url := fmt.Sprintf("http://%s/threshold/%s/json", sflowAddress, threshold.Name)
+		_, err = resty.R().
+			SetHeader("Content-Type", "application/json").
+			SetBody(jsonThreshold).
+			Put(url)
+
+		return err
+	}
+
+	for _, threshold := range networkMonitor.Spec.Thresholds {
+		exists, err := thresholdExists(threshold.Name)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			if err := installThreshold(threshold, networkMonitor); err != nil {
+				return err
+			}
+			r.logger.Info("Installed thresholds successfully", "NetworkMonitor", threshold.Name)
+			r.recorder.Event(networkMonitor, v1alpha1.EventTypeNormal, v1alpha1.EventTypeReconciliation, fmt.Sprintf("Installed threshold %s", threshold.Name))
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileNetworkMonitor) checkEvents(networkMonitor *v1alpha1.NetworkMonitor) ([]v1alpha1.NetworkEvent, error) {
+	var (
+		sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
+		url          = fmt.Sprintf("http://%s/events/json", sflowAddress)
+	)
+	resp, err := resty.R().SetQueryParams(map[string]string{
+		"maxEvents": networkMonitor.Spec.EventsConfig.MaxEvents,
+		"timeout":   networkMonitor.Spec.EventsConfig.Timeout,
+	}).Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("request returned with non-ok status code %v", resp.StatusCode())
+	}
+
+	fmt.Println(string(resp.Body()))
+
+	return nil, err
 }
 
 func getFlowForName(flowName string, flows []v1alpha1.Flow) (*v1alpha1.Flow, error) {
@@ -115,60 +234,4 @@ func getFlowForName(flowName string, flows []v1alpha1.Flow) (*v1alpha1.Flow, err
 		}
 	}
 	return nil, fmt.Errorf("flow with key %s does not exist", flowName)
-}
-
-func hasParentFlow(threshold v1alpha1.Threshold) bool {
-	return false
-}
-
-func installThresholds(networkMonitor *v1alpha1.NetworkMonitor) error {
-	installThreshold := func(threshold v1alpha1.Threshold, nm *v1alpha1.NetworkMonitor) error {
-		jsonFlow, err := json.Marshal(threshold)
-		if err != nil {
-			return err
-		}
-		url := fmt.Sprintf("http://%s/threshold/%s/json", net.JoinHostPort(nm.Spec.MonitoringEndpoint.IP, nm.Spec.MonitoringEndpoint.Port), threshold.Name)
-		fmt.Println(url)
-		resp, err := resty.R().
-			SetHeader("Content-Type", "application/json").
-			SetBody(jsonFlow).
-			Put(url)
-
-		fmt.Println(resp.RawResponse)
-		return err
-	}
-
-	for _, threshold := range networkMonitor.Spec.Thresholds {
-		if err := installThreshold(threshold, networkMonitor); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func installFlows(networkMonitor *v1alpha1.NetworkMonitor) error {
-	installFlow := func(flow v1alpha1.Flow, nm *v1alpha1.NetworkMonitor) error {
-		jsonFlow, err := json.Marshal(flow)
-		if err != nil {
-			return err
-		}
-		url := fmt.Sprintf("http://%s/flow/%s/json", net.JoinHostPort(nm.Spec.MonitoringEndpoint.IP, nm.Spec.MonitoringEndpoint.Port), flow.Name)
-		fmt.Println(url)
-		resp, err := resty.R().
-			SetHeader("Content-Type", "application/json").
-			SetBody(jsonFlow).
-			Put(url)
-
-		fmt.Println(resp.RawResponse)
-		return err
-	}
-
-	for _, flow := range networkMonitor.Spec.Flows {
-		if err := installFlow(flow, networkMonitor); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

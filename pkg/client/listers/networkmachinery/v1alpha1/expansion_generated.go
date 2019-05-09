@@ -23,3 +23,7 @@ package v1alpha1
 // NetworkMonitorListerExpansion allows custom methods to be added to
 // NetworkMonitorLister.
 type NetworkMonitorListerExpansion interface{}
+
+// NetworkNotificationListerExpansion allows custom methods to be added to
+// NetworkNotificationLister.
+type NetworkNotificationListerExpansion interface{}

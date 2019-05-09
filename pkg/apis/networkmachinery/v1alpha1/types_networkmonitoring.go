@@ -59,6 +59,7 @@ type NetworkMonitorSpec struct {
 	MonitoringEndpoint MonitoringEndpoint `json:"monitoringEndpoint"`
 	Flows              []Flow             `json:"flows"`
 	Thresholds         []Threshold        `json:"thresholds"`
+	EventsConfig       EventsConfig       `json:"eventsConfig"`
 }
 
 // NetworkMonitorSpec defines the spec for the network monitor resource
@@ -91,4 +92,10 @@ type Threshold struct {
 	ByFlow   string `json:"byFlow"`
 	FlowName string `json:"flowName"`
 	Metric   string `json:"metric,omitempty"`
+}
+
+// EventsConfig contains configuration parameters for event queries
+type EventsConfig struct {
+	MaxEvents string `json:"maxEvents"`
+	Timeout   string `json:"timeout"`
 }

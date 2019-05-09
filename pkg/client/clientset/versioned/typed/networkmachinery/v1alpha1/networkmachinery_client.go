@@ -29,6 +29,7 @@ import (
 type NetworkmachineryV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	NetworkMonitorsGetter
+	NetworkNotificationsGetter
 }
 
 // NetworkmachineryV1alpha1Client is used to interact with features provided by the networkmachinery.io group.
@@ -38,6 +39,10 @@ type NetworkmachineryV1alpha1Client struct {
 
 func (c *NetworkmachineryV1alpha1Client) NetworkMonitors() NetworkMonitorInterface {
 	return newNetworkMonitors(c)
+}
+
+func (c *NetworkmachineryV1alpha1Client) NetworkNotifications() NetworkNotificationInterface {
+	return newNetworkNotifications(c)
 }
 
 // NewForConfig creates a new NetworkmachineryV1alpha1Client for the given config.

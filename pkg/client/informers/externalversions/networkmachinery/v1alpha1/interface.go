@@ -28,6 +28,8 @@ import (
 type Interface interface {
 	// NetworkMonitors returns a NetworkMonitorInformer.
 	NetworkMonitors() NetworkMonitorInformer
+	// NetworkNotifications returns a NetworkNotificationInformer.
+	NetworkNotifications() NetworkNotificationInformer
 }
 
 type version struct {
@@ -44,4 +46,9 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // NetworkMonitors returns a NetworkMonitorInformer.
 func (v *version) NetworkMonitors() NetworkMonitorInformer {
 	return &networkMonitorInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// NetworkNotifications returns a NetworkNotificationInformer.
+func (v *version) NetworkNotifications() NetworkNotificationInformer {
+	return &networkNotificationInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

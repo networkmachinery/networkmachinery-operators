@@ -21,3 +21,5 @@ under the License.
 package v1alpha1
 
 type NetworkMonitorExpansion interface{}
+
+type NetworkNotificationExpansion interface{}

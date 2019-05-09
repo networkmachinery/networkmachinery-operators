@@ -6,7 +6,7 @@ metadata:
 spec:
   monitoringEndpoint:
     ip: "10.0.0.10"
-    port: "8008 "
+    port: "8008"
   flows:
     - name: "flow-name"
       keys: "ipsource,ipdestination,tcpsourceport,tcpdestinationport" #https://sflow-rt.com/define_flow.php#keys
@@ -18,6 +18,9 @@ spec:
   thresholds:
     - name: threshold-name
       metric: tcp
-      value: "10000"
+      value: "30"
       flowName: flow-name
       byFlow: "true"
+  eventsConfig:
+    maxEvents: "5"
+    timeout: "60"

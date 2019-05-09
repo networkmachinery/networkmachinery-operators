@@ -40,6 +40,8 @@ spec:
                 arbitrary metadata. They are not queryable and should be preserved
                 when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
               type: object
+              additionalProperties:
+                type: string
             clusterName:
               description: The name of the cluster which the object belongs to. This
                 is used to distinguish resources with same name and namespace in different
@@ -274,6 +276,8 @@ spec:
                 and categorize (scope and select) objects. May match selectors of
                 replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels'
               type: object
+              additionalProperties:
+                type: string
             name:
               description: 'Name must be unique within a namespace. Is required when
                 creating resources, although some resources may allow a client to
@@ -352,7 +356,18 @@ spec:
           - monitoringEndpoint
           - flows
           - thresholds
+          - eventsConfig
           properties:
+            eventsConfig:
+              type: object
+              required:
+              - maxEvents
+              - timeout
+              properties:
+                maxEvents:
+                  type: string
+                timeout:
+                  type: string
             flows:
               type: array
               items:
