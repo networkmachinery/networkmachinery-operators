@@ -41,6 +41,7 @@ type NetworkMonitorsGetter interface {
 type NetworkMonitorInterface interface {
 	Create(*v1alpha1.NetworkMonitor) (*v1alpha1.NetworkMonitor, error)
 	Update(*v1alpha1.NetworkMonitor) (*v1alpha1.NetworkMonitor, error)
+	UpdateStatus(*v1alpha1.NetworkMonitor) (*v1alpha1.NetworkMonitor, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1alpha1.NetworkMonitor, error)
@@ -121,6 +122,21 @@ func (c *networkMonitors) Update(networkMonitor *v1alpha1.NetworkMonitor) (resul
 	err = c.client.Put().
 		Resource("networkmonitors").
 		Name(networkMonitor.Name).
+		Body(networkMonitor).
+		Do().
+		Into(result)
+	return
+}
+
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+
+func (c *networkMonitors) UpdateStatus(networkMonitor *v1alpha1.NetworkMonitor) (result *v1alpha1.NetworkMonitor, err error) {
+	result = &v1alpha1.NetworkMonitor{}
+	err = c.client.Put().
+		Resource("networkmonitors").
+		Name(networkMonitor.Name).
+		SubResource("status").
 		Body(networkMonitor).
 		Do().
 		Into(result)

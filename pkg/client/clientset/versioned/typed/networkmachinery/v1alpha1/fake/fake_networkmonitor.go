@@ -96,6 +96,17 @@ func (c *FakeNetworkMonitors) Update(networkMonitor *v1alpha1.NetworkMonitor) (r
 	return obj.(*v1alpha1.NetworkMonitor), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeNetworkMonitors) UpdateStatus(networkMonitor *v1alpha1.NetworkMonitor) (*v1alpha1.NetworkMonitor, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewRootUpdateSubresourceAction(networkmonitorsResource, "status", networkMonitor), &v1alpha1.NetworkMonitor{})
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.NetworkMonitor), err
+}
+
 // Delete takes name of the networkMonitor and deletes it. Returns an error if one occurs.
 func (c *FakeNetworkMonitors) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

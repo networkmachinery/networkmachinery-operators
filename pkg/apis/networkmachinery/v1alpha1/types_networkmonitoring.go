@@ -23,8 +23,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	// EventTypeReconciliation an event reason to describe network monitor reconciliation.
+	EventTypeReconciliation string = "NetworkMonitorReconciliation"
+	// EventTypeDeletion an event reason to describe network monitor deletion.
+	EventTypeDeletion string = "NetworkMonitorDeletion"
+)
+
 // +genclient
-// +genclient:noStatus
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -33,7 +39,8 @@ type NetworkMonitor struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec NetworkMonitorSpec `json:"spec"`
+	Spec   NetworkMonitorSpec   `json:"spec,omitempty"`
+	Status NetworkMonitorStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -47,7 +54,6 @@ type NetworkMonitorList struct {
 	Items []NetworkMonitor `json:"items"`
 }
 
-
 // NetworkMonitorSpec defines the spec for the network monitor resource
 type NetworkMonitorSpec struct {
 	MonitoringEndpoint MonitoringEndpoint `json:"monitoringEndpoint"`
@@ -55,30 +61,34 @@ type NetworkMonitorSpec struct {
 	Thresholds         []Threshold        `json:"thresholds"`
 }
 
+// NetworkMonitorSpec defines the spec for the network monitor resource
+type NetworkMonitorStatus struct {
+	Status `json:",inline"`
+}
+
 type MonitoringEndpoint struct {
 	IP   string `json:"ip"`
 	Port string `json:"port"`
 }
 
-//TODO: Replace string for non-string types
+//TODO: Replace string for native non-string types
 
 // Flow defines the monitoring flow to be installed on the monitoring system
 type Flow struct {
 	Name          string `json:"name"`
 	Keys          string `json:"keys"`
 	Value         string `json:"value"`
-	Filter        string `json:"filter"`
-	Log           string `json:"log"`
-	FlowStart     string `json:"flowStart"`
-	ActiveTimeout string `json:"activeTimeout"`
+	Filter        string `json:"filter,omitempty"`
+	ActiveTimeout string `json:"activeTimeout,omitempty"`
+	Log           string `json:"log,omitempty"`
+	FlowStart     string `json:"flowStart,omitempty"`
 }
 
 // Threshold is the threshold to define for the flows
 type Threshold struct {
 	Name     string `json:"name"`
-	Metric   string `json:"metric"`
 	Value    string `json:"value"`
 	ByFlow   string `json:"byFlow"`
 	FlowName string `json:"flowName"`
+	Metric   string `json:"metric,omitempty"`
 }
-
