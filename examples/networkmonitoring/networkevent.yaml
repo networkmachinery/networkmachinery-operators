@@ -1,0 +1,23 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkNotification
+metadata:
+  name: networknotification
+spec:
+  monitoringEndpoint:
+    ip: 10.0.0.10
+    port: "8008"
+  flows:
+    - name: flow-name
+      keys: ipsource,ipdestination #https://sflow-rt.com/define_flow.php#keys
+      value: frames
+      filter: sourcegroup=external&destinationgroup=internal
+  #      log: false
+  #      flowStart: false
+  #      activeTimeout: 60
+  thresholds:
+    - name: threshold-name
+      metric: tcp
+      value: "10000"
+      flowName: flow-name
+      byFlow: "true"

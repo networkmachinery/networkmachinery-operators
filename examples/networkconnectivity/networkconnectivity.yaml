@@ -1,0 +1,18 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkMonitor
+metadata:
+  name: sflow-monitor
+spec:
+  test:
+    type: simple
+    Sources:
+      - name: "pod-name"
+        ip: "1.2.3.4"
+    Destinations:
+      - name: "pod-name"
+        ip: "1.2.3.5"
+      - name: "pod-name2"
+        ip: "1.2.3.2"
+      - name: "pod-name3"
+        ip: "1.2.3.3"
