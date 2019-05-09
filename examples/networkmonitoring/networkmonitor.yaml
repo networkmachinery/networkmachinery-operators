@@ -6,13 +6,13 @@ metadata:
 spec:
   monitoringEndpoint:
     ip: "10.0.0.10"
-    port: "8008"
+    port: "8008 "
   flows:
     - name: "flow-name"
-      keys: "ipsource,ipdestination" #https://sflow-rt.com/define_flow.php#keys
+      keys: "ipsource,ipdestination,tcpsourceport,tcpdestinationport" #https://sflow-rt.com/define_flow.php#keys
       value: "frames"
-      filter: "sourcegroup=external&destinationgroup=internal"
-#      log: false
+#      filter: "sourcegroup=external&destinationgroup=internal"
+      log: "true"
 #      flowStart: false
 #      activeTimeout: 60
   thresholds:

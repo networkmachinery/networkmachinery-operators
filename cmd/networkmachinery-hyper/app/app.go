@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 
+	versioncmd "github.com/networkmachinery/networkmachinery-operators/version/cmd"
+
 	networkmonitorcmd "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkmonitor/cmd"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +16,7 @@ func NewHyperCommand(ctx context.Context) *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		versioncmd.NewVersionCmd(),
 		networkmonitorcmd.NewNetworkMonitorCmd(ctx),
 	)
 

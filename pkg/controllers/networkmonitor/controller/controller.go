@@ -15,7 +15,7 @@ import (
 func newReconciler(mgr manager.Manager) *ReconcileNetworkMonitor {
 	return &ReconcileNetworkMonitor{
 		logger:   log.Log.WithName("networkmonitor-controller"),
-		Client:   mgr.GetClient(),
+		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
 		recorder: mgr.GetRecorder(Name)}
 }
