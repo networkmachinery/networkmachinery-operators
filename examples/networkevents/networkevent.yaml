@@ -1,0 +1,8 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkEvent
+metadata:
+  name: networkevent-test
+spec:
+  eventType: sflow #TODO: This can be implemented using a provider spec
+  event:

@@ -1,18 +1,29 @@
 ---
 apiVersion: networkmachinery.io/v1alpha1
-kind: NetworkMonitor
+kind: NetworkConnectivityTest
 metadata:
-  name: sflow-monitor
+  name: smokeping
 spec:
-  test:
-    type: simple
-    Sources:
-      - name: "pod-name"
-        ip: "1.2.3.4"
-    Destinations:
-      - name: "pod-name"
-        ip: "1.2.3.5"
-      - name: "pod-name2"
-        ip: "1.2.3.2"
-      - name: "pod-name3"
-        ip: "1.2.3.3"
+  tests: #TODO: layers can be implemented using a provider spec (different layer different object to serialize)
+    - layer: 3
+      Sources:
+        - name: "pod-name"
+          ip: "1.2.3.4"
+      Destinations:
+        - name: "pod-name"
+          ip: "1.2.3.5"
+        - name: "pod-name2"
+          ip: "1.2.3.2"
+        - name: "pod-name3"
+          ip: "1.2.3.3"
+    - layer: 4
+      Sources:
+        - name: "pod--name" #must be pod name for the pod
+          ip: "1.2.3.4"
+      Destinations:
+        - name: "pod-service-name"
+          ip: "1.2.3.5"
+        - name: "pod-name2"
+          ip: "1.2.3.2"
+        - name: "pod-name3"
+          ip: "1.2.3.3"
