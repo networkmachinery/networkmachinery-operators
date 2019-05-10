@@ -262,8 +262,14 @@ func (in *NetworkNotification) DeepCopyObject() runtime.Object {
 func (in *NetworkNotificationList) DeepCopyInto(out *NetworkNotificationList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
+	out.ListMeta = in.ListMeta
+	if in.Items != nil {
+		in, out := &in.Items, &out.Items
+		*out = make([]NetworkNotification, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 

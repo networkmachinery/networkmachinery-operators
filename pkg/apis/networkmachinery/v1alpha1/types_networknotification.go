@@ -20,10 +20,10 @@ type NetworkNotification struct {
 
 // NetworkNotificationList is a list of network notifications
 type NetworkNotificationList struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Spec NetworkNotificationSpec `json:"spec,omitempty"`
+	Items []NetworkNotification `json:"items,omitempty"`
 }
 
 type NetworkNotificationSpec struct {

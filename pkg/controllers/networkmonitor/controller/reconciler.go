@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,7 +141,7 @@ func (r *ReconcileNetworkMonitor) reconcile(ctx context.Context, networkMonitor 
 	}
 	// this is to allow for polling fresh events out of sFlow
 	return reconcile.Result{
-		RequeueAfter: 5 * time.Second,
+		RequeueAfter: 30 * time.Second,
 	}, nil
 }
 
@@ -321,7 +322,7 @@ func (r *ReconcileNetworkMonitor) checkEvents(ctx context.Context, networkMonito
 		for _, threshold := range monitor.Spec.Thresholds {
 			definedThresholds = append(definedThresholds, threshold.Name)
 		}
-		if in(e.Name, definedThresholds) {
+		if in(e.ThresholdID, definedThresholds) {
 			return true
 		}
 		return false
@@ -347,7 +348,7 @@ func (r *ReconcileNetworkMonitor) createNetworkNotification(ctx context.Context,
 
 	networkNotification := &v1alpha1.NetworkNotification{
 		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: NetworkNotification,
+			Name: NetworkNotification + strconv.Itoa(int(event.EventID)),
 		},
 		Spec: v1alpha1.NetworkNotificationSpec{
 			Event: v1alpha1.NetworkEvent{
