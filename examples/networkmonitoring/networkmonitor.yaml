@@ -8,18 +8,18 @@ spec:
     ip: "10.0.0.10"
     port: "8008"
   flows:
-    - name: "flow-name"
+    - name: "elephant-flow"
       keys: "ipsource,ipdestination,tcpsourceport,tcpdestinationport" #https://sflow-rt.com/define_flow.php#keys
       value: "frames"
-#      filter: "sourcegroup=external&destinationgroup=internal"
       log: "true"
+#      filter: "sourcegroup=external&destinationgroup=internal"
 #      flowStart: false
 #      activeTimeout: 60
   thresholds:
-    - name: threshold-name
+    - name: "elephant-flow"
       metric: tcp
       value: "30"
-      flowName: flow-name
+      flowName: "elephant-flow"
       byFlow: "true"
   eventsConfig:
     maxEvents: "5"

@@ -2,6 +2,21 @@
 apiVersion: networkmachinery.io/v1alpha1
 kind: NetworkNotification
 metadata:
-  name: networkevent-test
+  name: network-notification-1
 spec:
-  event:
+  networkEvent:
+    flow:
+      name: "some-flow"
+      keys:  "ipsource,ipdestination,tcpsourceport,tcpdestinationport"
+      value: "frames"
+    event:
+      eventID: 1
+      threshold: 20
+      value: 1.20
+      agent: "1.2.3.4"
+      timestamp: ""
+      name: ""
+      metric: ""
+      thresholdID: ""
+      dataSource: ""
+
