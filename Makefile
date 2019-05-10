@@ -14,7 +14,9 @@ help:
 	@echo 'Management commands for networkmachinery-operators:'
 	@echo
 	@echo 'Usage:'
+	@echo '    make start-network-monitor          Starts the network monitor controller.'
 	@echo '    make build           Compile the project.'
+	@echo '    make install         installs the networkmachinery-hyper binary'
 	@echo '    make vendor          runs go mod vendor, mostly used for ci.'
 	@echo '    make build-alpine    Compile optimized for alpine linux.'
 	@echo '    make package         Build final docker image with just the go binary inside'
@@ -35,6 +37,10 @@ build:
 	@echo "building ${BIN_NAME} ${VERSION}"
 	@echo "GOPATH=${GOPATH}"
 	go build -ldflags "-X github.com/networkmachinery/networkmachinery-operators/version.GitCommit=${GIT_COMMIT}${GIT_DIRTY} -X github.com/networkmachinery/networkmachinery-operators/version.BuildDate=${BUILD_DATE}" -o bin/${BIN_NAME} cmd/networkmachinery-hyper/main.go
+
+.PHONY: install
+install:
+	@go install cmd/networkmachinery-hyper/main.go
 
 .PHONY: vendor
 vendor:
@@ -72,4 +78,8 @@ clean:
 .PHONY: test
 test:
 	go test ./...
+
+.PHONY: start-network-monitor
+start-network-monitor:
+	@go run cmd/networkmachinery-hyper/main.go networkmonitor-controller
 
