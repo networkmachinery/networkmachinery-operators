@@ -27,21 +27,22 @@ type NetworkNotificationList struct {
 }
 
 type NetworkNotificationSpec struct {
-	Events []NetworkEvent `json:"events"`
+	Event NetworkEvent `json:"networkEvent"`
 }
 
 type NetworkEvent struct {
-	Flow  Flow  `json:"flow"`
+	Flow  Flow  `json:"flow,omitempty"`
 	Event Event `json:"event"`
 }
 
 type Event struct {
-	ID         string  `json:"id"`
-	Time       string  `json:"time"`
-	Name       string  `json:"name"`
-	Metric     string  `json:"metric"`
-	Threshold  int32   `json:"threshold"`
-	Value      float32 `json:"value"`
-	Agent      float32 `json:"agent"`
-	DataSource int32   `json:"datasource"`
+	EventID     int32   `json:"eventID"`
+	Threshold   int32   `json:"threshold"`
+	TimeStamp   int64   `json:"timestamp"`
+	Value       float32 `json:"value"`
+	Name        string  `json:"name"`
+	Metric      string  `json:"metric"`
+	ThresholdID string  `json:"thresholdID"`
+	Agent       string  `json:"agent"`
+	DataSource  string  `json:"dataSource"`
 }
