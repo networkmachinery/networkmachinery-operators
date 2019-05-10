@@ -16,8 +16,8 @@ spec:
 #      flowStart: false
 #      activeTimeout: 60
   thresholds:
-    - name: "elephant-flow"
-      metric: tcp
+    - name: "ddos"
+      metric: "elephant-flow"
       value: "30"
       flowName: "elephant-flow"
       byFlow: "true"

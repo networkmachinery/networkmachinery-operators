@@ -408,7 +408,6 @@ spec:
                 required:
                 - name
                 - value
-                - byFlow
                 - flowName
                 properties:
                   byFlow:

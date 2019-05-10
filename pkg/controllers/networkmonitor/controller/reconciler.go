@@ -8,6 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	apimachineryerror "github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery/error"
+
 	"gopkg.in/resty.v1"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery"
@@ -24,7 +28,8 @@ import (
 
 const (
 	// FinalizerName is the controlplane controller finalizer.
-	FinalizerName = "networkmachinery.io/networkmonitor"
+	FinalizerName       = "networkmachinery.io/networkmonitor"
+	NetworkNotification = "network-notification-"
 )
 
 // ReconcileMachineDeployment reconciles a MachineDeployment object.
@@ -69,7 +74,7 @@ func (r *ReconcileNetworkMonitor) delete(ctx context.Context, networkmonitor *v1
 	hasFinalizer, err := apimachinery.HasFinalizer(networkmonitor, FinalizerName)
 	if err != nil {
 		r.logger.Error(err, "Could not instantiate finalizer deletion")
-		return reconcile.Result{}, err
+		return apimachinery.ReconcileErr(err)
 	}
 	if !hasFinalizer {
 		r.logger.Info("Deleting NetworkMonitor causes a no-op as there is no finalizer.", "NetworkMonitor", networkmonitor.Name)
@@ -79,9 +84,22 @@ func (r *ReconcileNetworkMonitor) delete(ctx context.Context, networkmonitor *v1
 	r.logger.Info("Starting the deletion of network monitor", "NetworkMonitor", networkmonitor.Name)
 	r.recorder.Event(networkmonitor, v1alpha1.EventTypeNormal, v1alpha1.EventTypeDeletion, "Deleting the Network Monitor")
 
+	err = r.deleteFlows(ctx, networkmonitor)
+	if err != nil {
+		return apimachinery.ReconcileErr(err)
+	}
+
+	err = r.deleteThresholds(ctx, networkmonitor)
+	if err != nil {
+		return apimachinery.ReconcileErr(err)
+	}
+
+	r.logger.Info("Successfully cleaned up flows and thresholds", "NetworkMonitor", networkmonitor.Name)
+	r.recorder.Event(networkmonitor, v1alpha1.EventTypeNormal, v1alpha1.EventTypeDeletion, "Deleted flows and thresholds")
+
 	if err := apimachinery.DeleteFinalizer(ctx, r.client, FinalizerName, networkmonitor); err != nil {
 		r.logger.Error(err, "Error removing finalizer from the NetworkMonitor resource", "Network Monitor", networkmonitor.Name)
-		return reconcile.Result{}, err
+		return apimachinery.ReconcileErr(err)
 	}
 
 	return reconcile.Result{}, nil
@@ -90,34 +108,47 @@ func (r *ReconcileNetworkMonitor) delete(ctx context.Context, networkmonitor *v1
 func (r *ReconcileNetworkMonitor) reconcile(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) (reconcile.Result, error) {
 	r.logger.Info("Ensuring finalizer", "NetworkMonitor", networkMonitor.Name)
 	if err := apimachinery.EnsureFinalizer(ctx, r.client, FinalizerName, networkMonitor); err != nil {
-		return reconcile.Result{}, err
+		return apimachinery.ReconcileErr(err)
 	}
 
-	err := r.installFlows(networkMonitor)
+	err := r.installFlows(ctx, networkMonitor)
 	if err != nil {
 		return apimachinery.ReconcileErr(err)
 	}
 
-	err = r.installThresholds(networkMonitor)
+	err = r.installThresholds(ctx, networkMonitor)
 	if err != nil {
 		return apimachinery.ReconcileErr(err)
 	}
 
-	_, err = r.checkEvents(networkMonitor)
+	events, err := r.checkEvents(ctx, networkMonitor)
 	if err != nil {
-		return apimachinery.ReconcileErr(err)
+		switch err.(type) {
+		case *apimachineryerror.ZeroEventsError:
+			r.logger.Info(err.Error(), "NetworkMonitor", networkMonitor.Name)
+			return reconcile.Result{}, nil
+		default:
+			return apimachinery.ReconcileErr(err)
+		}
+	}
+
+	for _, event := range events {
+		err := r.createNetworkNotification(ctx, &event, networkMonitor)
+		if err != nil {
+			return apimachinery.ReconcileErr(err)
+		}
 	}
 	// this is to allow for polling fresh events out of sFlow
 	return reconcile.Result{
-		RequeueAfter: 60 * time.Second,
+		RequeueAfter: 5 * time.Second,
 	}, nil
 }
 
-func (r *ReconcileNetworkMonitor) installFlows(networkMonitor *v1alpha1.NetworkMonitor) error {
+func (r *ReconcileNetworkMonitor) installFlows(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) error {
 	var sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
 
 	flowExists := func(flowName string) (bool, error) {
-		resp, err := resty.R().Get("http://" + sflowAddress + fmt.Sprintf("/flow/%s/json", flowName))
+		resp, err := resty.R().SetContext(ctx).Get("http://" + sflowAddress + fmt.Sprintf("/flow/%s/json", flowName))
 		if err != nil {
 			return false, err
 		}
@@ -134,8 +165,8 @@ func (r *ReconcileNetworkMonitor) installFlows(networkMonitor *v1alpha1.NetworkM
 			return err
 		}
 		url := fmt.Sprintf("http://%s/flow/%s/json", net.JoinHostPort(nm.Spec.MonitoringEndpoint.IP, nm.Spec.MonitoringEndpoint.Port), flow.Name)
-		fmt.Println(url)
 		_, err = resty.R().
+			SetContext(ctx).
 			SetHeader("Content-Type", "application/json").
 			SetBody(jsonFlow).
 			Put(url)
@@ -160,10 +191,33 @@ func (r *ReconcileNetworkMonitor) installFlows(networkMonitor *v1alpha1.NetworkM
 	return nil
 }
 
-func (r *ReconcileNetworkMonitor) installThresholds(networkMonitor *v1alpha1.NetworkMonitor) error {
+func (r *ReconcileNetworkMonitor) deleteFlows(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) error {
+	var sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
+	deleteFlow := func(flowName string, nm *v1alpha1.NetworkMonitor) error {
+		resp, err := resty.R().SetContext(ctx).Delete("http://" + sflowAddress + fmt.Sprintf("/flow/%s/json", flowName))
+		if err != nil {
+			return err
+		}
+		// TODO: check other 20X codes
+		if resp.StatusCode() != http.StatusOK {
+			return nil
+		}
+		return nil
+	}
+
+	for _, flow := range networkMonitor.Spec.Flows {
+		err := deleteFlow(flow.Name, networkMonitor)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileNetworkMonitor) installThresholds(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) error {
 	var sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
 	thresholdExists := func(thresholdName string) (bool, error) {
-		resp, err := resty.R().Get("http://" + sflowAddress + fmt.Sprintf("/threshold/%s/json", thresholdName))
+		resp, err := resty.R().SetContext(ctx).Get("http://" + sflowAddress + fmt.Sprintf("/threshold/%s/json", thresholdName))
 		if err != nil {
 			return false, err
 		}
@@ -181,10 +235,20 @@ func (r *ReconcileNetworkMonitor) installThresholds(networkMonitor *v1alpha1.Net
 		}
 
 		url := fmt.Sprintf("http://%s/threshold/%s/json", sflowAddress, threshold.Name)
-		_, err = resty.R().
-			SetHeader("Content-Type", "application/json").
-			SetBody(jsonThreshold).
-			Put(url)
+		if len(threshold.ByFlow) > 0 {
+			_, err = resty.R().
+				SetContext(ctx).
+				SetHeader("Content-Type", "application/json").
+				SetQueryParam("byFlow", "true").
+				SetBody(jsonThreshold).
+				Put(url)
+		} else {
+			_, err = resty.R().
+				SetContext(ctx).
+				SetHeader("Content-Type", "application/json").
+				SetBody(jsonThreshold).
+				Put(url)
+		}
 
 		return err
 	}
@@ -205,12 +269,35 @@ func (r *ReconcileNetworkMonitor) installThresholds(networkMonitor *v1alpha1.Net
 	return nil
 }
 
-func (r *ReconcileNetworkMonitor) checkEvents(networkMonitor *v1alpha1.NetworkMonitor) ([]v1alpha1.NetworkEvent, error) {
+func (r *ReconcileNetworkMonitor) deleteThresholds(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) error {
+	var sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
+	deleteThreshold := func(thresholdName string, nm *v1alpha1.NetworkMonitor) error {
+		resp, err := resty.R().SetContext(ctx).Delete("http://" + sflowAddress + fmt.Sprintf("/threshold/%s/json", thresholdName))
+		if err != nil {
+			return err
+		}
+		// TODO: check other 20X codes
+		if resp.StatusCode() != http.StatusOK {
+			return nil
+		}
+		return nil
+	}
+
+	for _, threshold := range networkMonitor.Spec.Thresholds {
+		err := deleteThreshold(threshold.Name, networkMonitor)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *ReconcileNetworkMonitor) checkEvents(ctx context.Context, networkMonitor *v1alpha1.NetworkMonitor) ([]v1alpha1.Event, error) {
 	var (
 		sflowAddress = net.JoinHostPort(networkMonitor.Spec.MonitoringEndpoint.IP, networkMonitor.Spec.MonitoringEndpoint.Port)
 		url          = fmt.Sprintf("http://%s/events/json", sflowAddress)
 	)
-	resp, err := resty.R().SetQueryParams(map[string]string{
+	resp, err := resty.R().SetContext(ctx).SetQueryParams(map[string]string{
 		"maxEvents": networkMonitor.Spec.EventsConfig.MaxEvents,
 		"timeout":   networkMonitor.Spec.EventsConfig.Timeout,
 	}).Get(url)
@@ -219,19 +306,56 @@ func (r *ReconcileNetworkMonitor) checkEvents(networkMonitor *v1alpha1.NetworkMo
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("request returned with non-ok status code %v", resp.StatusCode())
+		return nil, fmt.Errorf("request returned with non-ok status code %v, reason %v", resp.StatusCode(), resp.Error())
 	}
 
-	fmt.Println(string(resp.Body()))
+	var events []v1alpha1.Event
+	err = json.Unmarshal(resp.Body(), &events)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, err
+	// we don't care about events that we didn't define thresholds for
+	events = filterEvents(events, networkMonitor, func(e v1alpha1.Event, monitor *v1alpha1.NetworkMonitor) bool {
+		var definedThresholds []string
+		for _, threshold := range monitor.Spec.Thresholds {
+			definedThresholds = append(definedThresholds, threshold.Name)
+		}
+		if in(e.Name, definedThresholds) {
+			return true
+		}
+		return false
+	})
+
+	if len(events) == 0 {
+		return nil, apimachineryerror.NewZeroEventsError("no related events for defined flows / thresholds found to return")
+	}
+
+	return events, err
 }
 
-func getFlowForName(flowName string, flows []v1alpha1.Flow) (*v1alpha1.Flow, error) {
-	for _, flow := range flows {
-		if flowName == flow.Name {
-			return &flow, nil
-		}
+func (r *ReconcileNetworkMonitor) createNetworkNotification(ctx context.Context, event *v1alpha1.Event, networkMonitor *v1alpha1.NetworkMonitor) error {
+	eventThreshold, err := getThresholdForName(event.ThresholdID, networkMonitor.Spec.Thresholds)
+	if err != nil {
+		return err
 	}
-	return nil, fmt.Errorf("flow with key %s does not exist", flowName)
+
+	eventFlow, err := getFlowForName(eventThreshold.FlowName, networkMonitor.Spec.Flows)
+	if err != nil {
+		return err
+	}
+
+	networkNotification := &v1alpha1.NetworkNotification{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: NetworkNotification,
+		},
+		Spec: v1alpha1.NetworkNotificationSpec{
+			Event: v1alpha1.NetworkEvent{
+				Event: *event,
+				Flow:  *eventFlow,
+			},
+		},
+	}
+
+	return apimachinery.CreateOrUpdate(ctx, r.client, networkNotification, nil)
 }
