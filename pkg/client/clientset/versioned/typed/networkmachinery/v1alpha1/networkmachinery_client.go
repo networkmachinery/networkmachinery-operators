@@ -28,6 +28,7 @@ import (
 
 type NetworkmachineryV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	NetworkConnectivityTestsGetter
 	NetworkMonitorsGetter
 	NetworkNotificationsGetter
 }
@@ -35,6 +36,10 @@ type NetworkmachineryV1alpha1Interface interface {
 // NetworkmachineryV1alpha1Client is used to interact with features provided by the networkmachinery.io group.
 type NetworkmachineryV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *NetworkmachineryV1alpha1Client) NetworkConnectivityTests() NetworkConnectivityTestInterface {
+	return newNetworkConnectivityTests(c)
 }
 
 func (c *NetworkmachineryV1alpha1Client) NetworkMonitors() NetworkMonitorInterface {

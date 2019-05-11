@@ -21,12 +21,12 @@ import (
 func NewNetworkMonitorCmd(ctx context.Context) *cobra.Command {
 	networkMonitorCmdOpts := NetworkMonitorCmdOptions{
 		ConfigFlags: genericclioptions.NewConfigFlags(),
-		LeaderElectionOptions: LeaderElectionOptions{
+		LeaderElectionOptions: controllers.LeaderElectionOptions{
 			LeaderElection:          true,
 			LeaderElectionNamespace: "default",
 			LeaderElectionID:        utils.LeaderElectionNameID(controller.Name),
 		},
-		ControllerOptions: ControllerOptions{
+		ControllerOptions: controllers.ControllerOptions{
 			MaxConcurrentReconciles: 5,
 		},
 	}

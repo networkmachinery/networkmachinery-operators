@@ -12,15 +12,19 @@ spec:
       keys: "ipsource,ipdestination,tcpsourceport,tcpdestinationport" #https://sflow-rt.com/define_flow.php#keys
       value: "frames"
       log: "true"
+    - name: "icmp-flow"
+      keys: "ipsource,ipdestination" #https://sflow-rt.com/define_flow.php#keys
+      value: "frames"
+      log: "true"
 #      filter: "sourcegroup=external&destinationgroup=internal"
 #      flowStart: false
-#      activeTimeout: 60
+#      activeTime out: 60
   thresholds:
-    - name: "ddos"
+    - name: "ddos2"
       metric: "elephant-flow"
-      value: "30"
+      value: 100
       flowName: "elephant-flow"
-      byFlow: "true"
+#      byFlow: "true"
   eventsConfig:
     maxEvents: "5"
     timeout: "60"

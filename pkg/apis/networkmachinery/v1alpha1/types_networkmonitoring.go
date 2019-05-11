@@ -87,11 +87,11 @@ type Flow struct {
 
 // Threshold is the threshold to define for the flows
 type Threshold struct {
+	Value    int32  `json:"value"`
 	Name     string `json:"name"`
-	Value    string `json:"value"`
-	FlowName string `json:"flowName"`
 	Metric   string `json:"metric,omitempty"`
 	ByFlow   string `json:"byFlow,omitempty"`
+	FlowName string `json:"flowName"`
 }
 
 // EventsConfig contains configuration parameters for event queries

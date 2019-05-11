@@ -26,6 +26,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// NetworkConnectivityTests returns a NetworkConnectivityTestInformer.
+	NetworkConnectivityTests() NetworkConnectivityTestInformer
 	// NetworkMonitors returns a NetworkMonitorInformer.
 	NetworkMonitors() NetworkMonitorInformer
 	// NetworkNotifications returns a NetworkNotificationInformer.
@@ -41,6 +43,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// NetworkConnectivityTests returns a NetworkConnectivityTestInformer.
+func (v *version) NetworkConnectivityTests() NetworkConnectivityTestInformer {
+	return &networkConnectivityTestInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // NetworkMonitors returns a NetworkMonitorInformer.

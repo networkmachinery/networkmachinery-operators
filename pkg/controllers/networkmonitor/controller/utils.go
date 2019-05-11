@@ -6,6 +6,10 @@ import (
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 )
 
+func Equal(t1 *v1alpha1.Threshold, t2 *v1alpha1.Threshold) bool {
+	return t1.Metric == t2.Metric && t1.Value == t2.Value
+}
+
 func filterEvents(events []v1alpha1.Event, monitor *v1alpha1.NetworkMonitor, test func(v1alpha1.Event, *v1alpha1.NetworkMonitor) bool) (ret []v1alpha1.Event) {
 	for _, event := range events {
 		if test(event, monitor) {

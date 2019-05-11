@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkmonitor/controller"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -8,24 +9,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-var managerOptions = manager.Options{}
-
-type LeaderElectionOptions struct {
-	LeaderElection          bool
-	LeaderElectionNamespace string
-	LeaderElectionID        string
-}
-
-type ControllerOptions struct {
-	MaxConcurrentReconciles int
-}
-
 // NetworkMonitorCmdOptions necessary options to run the sFlowController
 // the current context on a user's KUBECONFIG
 type NetworkMonitorCmdOptions struct {
 	*genericclioptions.ConfigFlags
-	LeaderElectionOptions
-	ControllerOptions
+	controllers.LeaderElectionOptions
+	controllers.ControllerOptions
 }
 
 func (nm *NetworkMonitorCmdOptions) ApplyLeaderElection(mgr *manager.Options) *manager.Options {

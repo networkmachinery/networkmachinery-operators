@@ -20,6 +20,10 @@ under the License.
 
 package v1alpha1
 
+// NetworkConnectivityTestListerExpansion allows custom methods to be added to
+// NetworkConnectivityTestLister.
+type NetworkConnectivityTestListerExpansion interface{}
+
 // NetworkMonitorListerExpansion allows custom methods to be added to
 // NetworkMonitorLister.
 type NetworkMonitorListerExpansion interface{}

@@ -20,6 +20,8 @@ under the License.
 
 package v1alpha1
 
+type NetworkConnectivityTestExpansion interface{}
+
 type NetworkMonitorExpansion interface{}
 
 type NetworkNotificationExpansion interface{}

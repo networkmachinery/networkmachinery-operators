@@ -406,8 +406,8 @@ spec:
               items:
                 type: object
                 required:
-                - name
                 - value
+                - name
                 - flowName
                 properties:
                   byFlow:
@@ -419,7 +419,8 @@ spec:
                   name:
                     type: string
                   value:
-                    type: string
+                    type: integer
+                    format: int32
         status:
           type: object
           properties:
