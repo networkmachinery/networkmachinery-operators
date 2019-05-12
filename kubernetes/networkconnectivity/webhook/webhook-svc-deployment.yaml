@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: networkconnectivity-layer-validator-svc
+  labels:
+    app: networkconnectivity-layer-validator
+spec:
+  ports:
+    - port: 443
+      targetPort: 443
+  selector:
+    app: networkconnectivity-layer-validator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: networkconnectivity-layer-validator-deployment
+  labels:
+    app: networkconnectivity-layer-validator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: networkconnectivity-layer-validator
+  template:
+    metadata:
+      labels:
+        app: networkconnectivity-layer-validator
+    spec:
+      containers:
+        - name: networkconnectivity-layer-validator
+          image: zanetworker/networkconnectivity-layer-validator:v1
+          imagePullPolicy: Always
+          args:
+            - -tlsCertFile=/etc/webhook/certs/cert.pem
+            - -tlsKeyFile=/etc/webhook/certs/key.pem
+            - -alsologtostderr
+            - -v=4
+            - 2>&1
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: networkconnectivity-layer-validator-certs

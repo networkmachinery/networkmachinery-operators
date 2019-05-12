@@ -28,13 +28,13 @@ is open to whoever wants to implement it.
 
 ### Write Documentation
 
-networkmachinery-sflow could always use more documentation, whether as part of the
-official networkmachinery-sflow docs, in docstrings, or even on the web in blog posts,
+networkmachinery-operators could always use more documentation, whether as part of the
+official networkmachinery-operators docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at https://github.com/zanetworker/networkmachinery-sflow/issues.
+The best way to send feedback is to file an issue at https://github.com/networkmachinery/networkmachinery-operators/issues.
 
 If you are proposing a feature:
 
@@ -45,12 +45,12 @@ If you are proposing a feature:
 
 ## Get Started!
 
-Ready to contribute? Here's how to set up `networkmachinery-sflow` for local development.
+Ready to contribute? Here's how to set up `networkmachinery-operators` for local development.
 
-1. Fork the `networkmachinery-sflow` repo on GitHub.
+1. Fork the `networkmachinery-operators` repo on GitHub.
 2. Clone your fork locally::
 ```bash
-    $ git clone git@github.com:your_name_here/networkmachinery-sflow.git
+    $ git clone git@github.com:networkmachinery/networkmachinery-operators.git
 ```
 3. Create a branch for local development::
 ```bash

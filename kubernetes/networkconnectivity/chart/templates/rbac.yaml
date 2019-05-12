@@ -1,0 +1,71 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: networkconnectivity-test-controller
+  labels:
+    app.kubernetes.io/name: networkconnectivity-test-controller
+    helm.sh/chart: networkconnectivity-test-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+rules:
+  - apiGroups:
+      - networkmachinery.io
+    resources:
+      - networkconnec
+      - infrastructures
+      - infrastructures/status
+      - controlplanes
+      - controlplanes/status
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    resourceNames:
+      - provider-aws-leader-election
+    verbs:
+      - get
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - ""
+      - batch
+      - rbac.authorization.k8s.io
+      - admissionregistration.k8s.io
+    resources:
+      - events
+      - secrets
+      - configmaps
+      - services
+      - serviceaccounts
+      - roles
+      - rolebindings
+      - jobs
+      - pods
+      - pods/log
+      - mutatingwebhookconfigurations
+    verbs:
+      - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: networkconnectivity-test-controller
+  labels:
+    app.kubernetes.io/name: networkconnectivity-test-controller
+    helm.sh/chart: networkconnectivity-test-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: networkconnectivity-test-controller
+subjects:
+  - kind: ServiceAccount
+    name: networkconnectivity-test-controller
+    namespace: {{ .Release.Namespace }}

@@ -40,8 +40,6 @@ spec:
                 arbitrary metadata. They are not queryable and should be preserved
                 when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
               type: object
-              additionalProperties:
-                type: string
             clusterName:
               description: The name of the cluster which the object belongs to. This
                 is used to distinguish resources with same name and namespace in different
@@ -276,8 +274,6 @@ spec:
                 and categorize (scope and select) objects. May match selectors of
                 replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels'
               type: object
-              additionalProperties:
-                type: string
             name:
               description: 'Name must be unique within a namespace. Is required when
                 creating resources, although some resources may allow a client to
@@ -353,36 +349,29 @@ spec:
         spec:
           type: object
           required:
-          - tests
+          - layer
+          - sources
+          - destinations
           properties:
-            tests:
+            destinations:
               type: array
               items:
                 type: object
-                required:
-                - layer
-                - sources
-                - destinations
                 properties:
-                  destinations:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        ip:
-                          type: string
-                        name:
-                          type: string
-                        port:
-                          type: string
-                  layer:
+                  ip:
                     type: string
-                  sources:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        ip:
-                          type: string
-                        name:
-                          type: string
+                  name:
+                    type: string
+                  port:
+                    type: string
+            layer:
+              type: string
+            sources:
+              type: array
+              items:
+                type: object
+                properties:
+                  ip:
+                    type: string
+                  name:
+                    type: string

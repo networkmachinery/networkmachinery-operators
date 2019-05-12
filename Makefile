@@ -4,7 +4,7 @@ VERSION := $(shell grep "const Version " version/version.go | sed -E 's/.*"(.+)"
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
-IMAGE_NAME := "zanetworker/networkmachinery-operators"
+IMAGE_NAME := "zanetworker/networkmachinery-hyper"
 
 .PHONY: default
 default: test
@@ -14,7 +14,9 @@ help:
 	@echo 'Management commands for networkmachinery-operators:'
 	@echo
 	@echo 'Usage:'
-	@echo '    make start-network-monitor          Starts the network monitor controller.'
+	@echo '    make start-network-monitor          			Starts the network monitor controller.'
+	@echo '    make start-networkconnectivity-test          Starts the network connectivity test controller.'
+	@echo '    make generate        Runs code-gen for the project APIs'
 	@echo '    make build           Compile the project.'
 	@echo '    make install         installs the networkmachinery-hyper binary'
 	@echo '    make vendor          runs go mod vendor, mostly used for ci.'
@@ -30,7 +32,6 @@ help:
 .PHONY: generate
 generate:
 	./hack/update-codegen.sh
-
 
 .PHONY: build
 build:
@@ -83,3 +84,6 @@ test:
 start-network-monitor:
 	@go run cmd/networkmachinery-hyper/main.go networkmonitor-controller
 
+.PHONY: start-networkconnectivity-test
+start-networkconnectivity-test:
+	@go run cmd/networkmachinery-hyper/main.go networkconnectivity-test-controller
