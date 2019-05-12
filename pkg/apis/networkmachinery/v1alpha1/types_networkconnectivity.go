@@ -1,6 +1,9 @@
 package v1alpha1
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+)
 
 // +genclient
 // +genclient:nonNamespaced
@@ -12,6 +15,7 @@ type NetworkConnectivityTest struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec NetworkConnectivityTestSpec `json:"spec,omitempty"`
+	Status NetworkConnectivityTestStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -25,22 +29,32 @@ type NetworkConnectivityTestList struct {
 }
 
 type NetworkConnectivityTestSpec struct {
-	Tests []NetworkTest `json:"tests"`
+	Layer        string                       `json:"layer"`
+	Source         NetworkSourceEndpoint      `json:"source"`
+	Destinations []NetworkDestinationEndpoint `json:"destinations"`
 }
 
-type NetworkEndpointSource struct {
-	Name string `json:"name,omitempty"`
-	IP   string `json:"ip,omitempty"`
+type NetworkConnectivityTestStatus struct {
+	TestStatus *runtime.RawExtension `json:"testStatus,omitempty"`
 }
 
-type NetworkEndpointDestination struct {
+
+type NetworkSourceEndpoint struct {
 	Name string `json:"name,omitempty"`
-	IP   string `json:"ip,omitempty"`
+	Namespace string `json:"namespace"`
+	Container string `json:"container"`
+	SourceSelector *metav1.LabelSelector `json:"sourceSelector,omitempty"`
+}
+
+
+type NetworkDestinationEndpoint struct {
+	Kind string `json:"kind"`
+	Name string `json:"name,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	IP string `json:"ip,omitempty"`
 	Port string `json:"port,omitempty"`
 }
 
-type NetworkTest struct {
-	Layer        string                       `json:"layer"`
-	Sources      []NetworkEndpointSource      `json:"sources"`
-	Destinations []NetworkEndpointDestination `json:"destinations"`
-}
+
+
+

@@ -41,6 +41,7 @@ type NetworkConnectivityTestsGetter interface {
 type NetworkConnectivityTestInterface interface {
 	Create(*v1alpha1.NetworkConnectivityTest) (*v1alpha1.NetworkConnectivityTest, error)
 	Update(*v1alpha1.NetworkConnectivityTest) (*v1alpha1.NetworkConnectivityTest, error)
+	UpdateStatus(*v1alpha1.NetworkConnectivityTest) (*v1alpha1.NetworkConnectivityTest, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1alpha1.NetworkConnectivityTest, error)
@@ -121,6 +122,21 @@ func (c *networkConnectivityTests) Update(networkConnectivityTest *v1alpha1.Netw
 	err = c.client.Put().
 		Resource("networkconnectivitytests").
 		Name(networkConnectivityTest.Name).
+		Body(networkConnectivityTest).
+		Do().
+		Into(result)
+	return
+}
+
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+
+func (c *networkConnectivityTests) UpdateStatus(networkConnectivityTest *v1alpha1.NetworkConnectivityTest) (result *v1alpha1.NetworkConnectivityTest, err error) {
+	result = &v1alpha1.NetworkConnectivityTest{}
+	err = c.client.Put().
+		Resource("networkconnectivitytests").
+		Name(networkConnectivityTest.Name).
+		SubResource("status").
 		Body(networkConnectivityTest).
 		Do().
 		Into(result)

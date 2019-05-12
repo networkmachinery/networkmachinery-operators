@@ -2,6 +2,9 @@ module github.com/networkmachinery/networkmachinery-operators
 
 require (
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30 // indirect
+	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
+	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
+	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/go-logr/zapr v0.1.1 // indirect
 	github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef // indirect
@@ -15,6 +18,7 @@ require (
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/spf13/cobra v0.0.3
+	github.com/spf13/pflag v1.0.1
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0 // indirect
@@ -23,8 +27,9 @@ require (
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/resty.v1 v1.12.0
+	k8s.io/api v0.0.0-20190511023547-e63b5755afac
 	k8s.io/apiextensions-apiserver v0.0.0-20190508104225-cdabac1ba2af // indirect
-	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
+	k8s.io/apimachinery v0.0.0-20190511023455-ad85901afca0
 	k8s.io/cli-runtime v0.0.0-20190503224301-e3a767d65843
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5 // indirect

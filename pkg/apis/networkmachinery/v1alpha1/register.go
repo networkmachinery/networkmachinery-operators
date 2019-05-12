@@ -54,6 +54,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&NetworkMonitorList{},
 		&NetworkNotification{},
 		&NetworkNotificationList{},
+		&NetworkConnectivityTest{},
+		&NetworkConnectivityTestList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

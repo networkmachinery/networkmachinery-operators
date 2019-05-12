@@ -15,9 +15,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-//// needed to poll for events from the network monitoring component
-//var resyncPeriod = 30 * time.Second
-
 func NewNetworkMonitorCmd(ctx context.Context) *cobra.Command {
 	networkMonitorCmdOpts := NetworkMonitorCmdOptions{
 		ConfigFlags: genericclioptions.NewConfigFlags(),

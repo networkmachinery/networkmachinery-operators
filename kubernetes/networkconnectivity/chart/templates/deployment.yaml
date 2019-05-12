@@ -8,7 +8,6 @@ metadata:
     helm.sh/chart: networkconnectivity-test-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: networkconnectivity-test-controller
@@ -25,24 +24,23 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
+            - /opt/networkmachinery-operators/bin/networkmachinery-hyper
             - networkconnectivity-test-controller
           ports:
             - name: webhook-server
               containerPort: 9876
               protocol: TCP
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: cert
               mountPath: /tmp/cert
       volumes:
         - name: cert
           secret:
-            secretName: aws-webhooks
+            secretName: {{ .Values.webhookConfig.secretName }}
             defaultMode: 420
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: aws-webhooks
+  name: {{ .Values.webhookConfig.secretName }}
   namespace: {{ .Release.Namespace }}

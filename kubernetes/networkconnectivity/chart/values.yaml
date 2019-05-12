@@ -1,0 +1,8 @@
+image:
+  repository: zanetworker/networkmachinery-hyper
+  tag: latest
+  pullPolicy: Always
+
+webhookConfig:
+  secretName: networkconnectivity-layer-validator-secret
+  serviceName: networkconnectivity-layer-validator-service

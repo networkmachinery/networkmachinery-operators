@@ -11,11 +11,8 @@ rules:
   - apiGroups:
       - networkmachinery.io
     resources:
-      - networkconnec
-      - infrastructures
-      - infrastructures/status
-      - controlplanes
-      - controlplanes/status
+      - networkconnectivitytest
+      - networkconnectivitytest/status
     verbs:
       - get
       - list
@@ -25,9 +22,24 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - pods
+      - pods/log
+      - services
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods/exec
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
       - configmaps
     resourceNames:
-      - provider-aws-leader-election
+      - networkconnectivity-test-controller-leader-election
     verbs:
       - get
       - watch
@@ -46,9 +58,6 @@ rules:
       - serviceaccounts
       - roles
       - rolebindings
-      - jobs
-      - pods
-      - pods/log
       - mutatingwebhookconfigurations
     verbs:
       - "*"

@@ -5,13 +5,37 @@ metadata:
   name: smokeping
 spec:
     layer: "3"
-    sources:
-      - name: "pod-name"
-        ip: "1.2.3.4"
+    source:
+      name: "kube-apiserver-docker-for-desktop"
+      namespace: "kube-system"
+      container: ""
     destinations:
-      - name: "pod-name"
-        ip: "1.2.3.5"
-      - name: "pod-name2"
-        ip: "1.2.3.2"
-      - name: "pod-name3"
-        ip: "1.2.3.3"
+      - kind: pod
+        ip: "10.1.2.24"
+#      - kind: pod
+#        name: "pod-name"
+#        namespace: "pod-namespace"
+#      - kind: pod
+#        destinationSelector:
+#          matchLabels:
+#            release: "stable"
+#      - kind: service
+#        name: "pod-name"
+#        namespace: "pod-namespace"
+
+#  type NetworkSourceEndpoint struct {
+#  Name string `json:"name,omitempty"`
+#  Namespace string `json:"namespace"`
+#  Container string `json:"container"`
+#  SourceSelector *metav1.LabelSelector `json:"sourceSelector,omitempty"`
+#}
+#
+#
+#  type NetworkDestinationEndpoint struct {
+#  Kind string `json:"kind"`
+#  Name string `json:"name,omitempty"`
+#  Namespace string `json:"namespace,omitempty"`
+#  IP string `json:"ip,omitempty"`
+#  Port string `json:"port,omitempty"`
+#}
+
