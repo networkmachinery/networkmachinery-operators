@@ -29,9 +29,11 @@ rules:
       - pods
       - pods/log
       - services
+      - endpoints
     verbs:
       - get
       - list
+      - watch
   - apiGroups:
       - ""
     resources:
