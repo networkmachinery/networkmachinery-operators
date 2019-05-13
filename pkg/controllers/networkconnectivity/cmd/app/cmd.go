@@ -65,7 +65,7 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 				Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
 				WithManager(mgr).
 				ForType(&v1alpha1.NetworkConnectivityTest{}).
-				Handlers(&networkconnectivitywebhook.LayerValidator{}).
+				Handlers(&networkconnectivitywebhook.LayerValidator{}, &networkconnectivitywebhook.DestinationValidator{}).
 				Build()
 			if err != nil {
 				entryLog.Error(err, "unable to setup validating webhook")
