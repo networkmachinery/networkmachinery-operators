@@ -12,7 +12,11 @@ rules:
       - networkmachinery.io
     resources:
       - networkconnectivitytest
+      - networkconnectivitytests
+      - networkmonitor
+      - networkmonitors
       - networkconnectivitytest/status
+      - networkconnectivitytests/status
     verbs:
       - get
       - list
@@ -59,6 +63,7 @@ rules:
       - roles
       - rolebindings
       - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
     verbs:
       - "*"
 ---

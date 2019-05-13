@@ -17,12 +17,11 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"io"
+	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
 	"net/http"
 	"strings"
-	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
-	"k8s.io/client-go/tools/remotecommand"
 
 	"context"
 )
@@ -36,7 +35,7 @@ func NewPodExecutor(config *rest.Config) PodExecutor {
 
 // PodExecutor is the pod executor interface
 type PodExecutor interface {
-	Execute(ctx context.Context, name, namespace, containerName, command string) (io.Reader, error)
+	Execute(ctx context.Context, name, namespace, containerName, command string) (string, string, error)
 }
 
 type podExecutor struct {
@@ -44,10 +43,10 @@ type podExecutor struct {
 }
 
 // Execute executes a command on a pod
-func (p *podExecutor) Execute(ctx context.Context, namespace, name, containerName, command string) (io.Reader, error) {
+func (p *podExecutor) Execute(ctx context.Context, namespace, name, containerName, command string) (string,  string, error) {
 	client, err := corev1client.NewForConfig(p.config)
 	if err != nil {
-		return nil, err
+		return "", "",  err
 	}
 
 	var stdout, stderr bytes.Buffer
@@ -67,7 +66,7 @@ func (p *podExecutor) Execute(ctx context.Context, namespace, name, containerNam
 
 	executor, err := remotecommand.NewSPDYExecutor(p.config, http.MethodPost, request.URL())
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialized the command exector: %v", err)
+		return stdout.String(), stderr.String(), fmt.Errorf("failed to initialized the command exector: %v", err)
 	}
 
 	err = executor.Stream(remotecommand.StreamOptions{
@@ -76,9 +75,8 @@ func (p *podExecutor) Execute(ctx context.Context, namespace, name, containerNam
 		Stderr: &stderr,
 		Tty:    false,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &stdout, nil
+	ping := &Ping{}
+	ParsePingOutput(stdout.Bytes(), ping)
+	fmt.Println(ping.average.String(), ping.average2.String())
+	return strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err
 }
