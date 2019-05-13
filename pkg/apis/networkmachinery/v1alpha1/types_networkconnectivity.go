@@ -14,7 +14,7 @@ type NetworkConnectivityTest struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec NetworkConnectivityTestSpec `json:"spec,omitempty"`
+	Spec   NetworkConnectivityTestSpec   `json:"spec,omitempty"`
 	Status NetworkConnectivityTestStatus `json:"status,omitempty"`
 }
 
@@ -30,31 +30,34 @@ type NetworkConnectivityTestList struct {
 
 type NetworkConnectivityTestSpec struct {
 	Layer        string                       `json:"layer"`
-	Source         NetworkSourceEndpoint      `json:"source"`
+	Source       NetworkSourceEndpoint        `json:"source"`
 	Destinations []NetworkDestinationEndpoint `json:"destinations"`
+	Frequency    string                       `json:"frequency,omitempty"`
 }
 
 type NetworkConnectivityTestStatus struct {
 	TestStatus *runtime.RawExtension `json:"testStatus,omitempty"`
 }
 
-
 type NetworkSourceEndpoint struct {
-	Name string `json:"name,omitempty"`
-	Namespace string `json:"namespace"`
-	Container string `json:"container"`
+	Name           string                `json:"name,omitempty"`
+	Namespace      string                `json:"namespace"`
+	Container      string                `json:"container"`
 	SourceSelector *metav1.LabelSelector `json:"sourceSelector,omitempty"`
 }
 
+type EndpointKind string
+
+const (
+	IP      EndpointKind = "ip"
+	Pod     EndpointKind = "pod"
+	Service EndpointKind = "service"
+)
 
 type NetworkDestinationEndpoint struct {
-	Kind string `json:"kind"`
-	Name string `json:"name,omitempty"`
-	Namespace string `json:"namespace,omitempty"`
-	IP string `json:"ip,omitempty"`
-	Port string `json:"port,omitempty"`
+	Kind      EndpointKind `json:"kind"`
+	Name      string       `json:"name,omitempty"`
+	Namespace string       `json:"namespace,omitempty"`
+	IP        string       `json:"ip,omitempty"`
+	Port      string       `json:"port,omitempty"`
 }
-
-
-
-

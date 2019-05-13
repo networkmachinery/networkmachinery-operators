@@ -6,12 +6,22 @@ metadata:
 spec:
     layer: "3"
     source:
-      name: "kube-apiserver-docker-for-desktop"
+      name: "kube-apiserver-kind-1-control-plane"
       namespace: "kube-system"
       container: ""
     destinations:
       - kind: pod
+        namespace: default
+        name: somepod
+      - kind: pod
+        namespace: default
+        name: somepod2
+      - kind: ip
         ip: "10.1.2.24"
+      - kind: service
+        namespace: default
+        name: kubernetes
+
 #      - kind: pod
 #        name: "pod-name"
 #        namespace: "pod-namespace"

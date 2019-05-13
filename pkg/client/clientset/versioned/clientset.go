@@ -30,8 +30,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	NetworkmachineryV1alpha1() networkmachineryv1alpha1.NetworkmachineryV1alpha1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Networkmachinery() networkmachineryv1alpha1.NetworkmachineryV1alpha1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -43,12 +41,6 @@ type Clientset struct {
 
 // NetworkmachineryV1alpha1 retrieves the NetworkmachineryV1alpha1Client
 func (c *Clientset) NetworkmachineryV1alpha1() networkmachineryv1alpha1.NetworkmachineryV1alpha1Interface {
-	return c.networkmachineryV1alpha1
-}
-
-// Deprecated: Networkmachinery retrieves the default version of NetworkmachineryClient.
-// Please explicitly pick a version.
-func (c *Clientset) Networkmachinery() networkmachineryv1alpha1.NetworkmachineryV1alpha1Interface {
 	return c.networkmachineryV1alpha1
 }
 
