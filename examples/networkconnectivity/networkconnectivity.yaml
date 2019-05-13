@@ -22,20 +22,3 @@ spec:
 #      - kind: service
 #        name: "pod-name"
 #        namespace: "pod-namespace"
-
-#  type NetworkSourceEndpoint struct {
-#  Name string `json:"name,omitempty"`
-#  Namespace string `json:"namespace"`
-#  Container string `json:"container"`
-#  SourceSelector *metav1.LabelSelector `json:"sourceSelector,omitempty"`
-#}
-#
-#
-#  type NetworkDestinationEndpoint struct {
-#  Kind string `json:"kind"`
-#  Name string `json:"name,omitempty"`
-#  Namespace string `json:"namespace,omitempty"`
-#  IP string `json:"ip,omitempty"`
-#  Port string `json:"port,omitempty"`
-#}
-

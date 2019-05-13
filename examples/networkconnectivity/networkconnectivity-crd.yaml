@@ -16,6 +16,8 @@ spec:
     kind: NetworkConnectivityTest
     shortNames:
     - nct
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: NetworkConnectivityTest represents a network connectivity test
