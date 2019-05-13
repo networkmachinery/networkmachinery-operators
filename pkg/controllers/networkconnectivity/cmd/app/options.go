@@ -1,4 +1,4 @@
-package cmd
+package app
 
 import (
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers"
