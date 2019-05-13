@@ -15,27 +15,16 @@
 package utils
 
 import (
-	"fmt"
-	"io"
 	"context"
+	"fmt"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
-	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// PodExecByLabel executes a command inside pods filtered by label
-func PodExecByLabel(ctx context.Context, config *rest.Config, client client.Client,  podLabels labels.Selector, podContainer, command, namespace string) (io.Reader, error) {
-	pod, err := getFirstRunningPodWithLabels(ctx, podLabels, namespace, client)
-	if err != nil {
-		return nil, err
-	}
-
-	return NewPodExecutor(config).Execute(ctx, pod.Namespace, pod.Name, podContainer, command)
-}
-
-func PodExec(ctx context.Context, config *rest.Config,  namespace, name,  container, command  string)(io.Reader, error) {
-	return NewPodExecutor(config).Execute(ctx, namespace, name, container, command)
+func PodExec(ctx context.Context, config *rest.Config, options ExecOptions) error {
+	return NewPodExecutor(config).Execute(ctx, options)
 }
 
 // getFirstRunningPodWithLabels fetches the first running pod with the desired set of labels <labelsMap>
@@ -44,7 +33,7 @@ func getFirstRunningPodWithLabels(ctx context.Context, labelsMap labels.Selector
 		podList *corev1.PodList
 		err     error
 	)
-	podList, err = getPodsByLabels(ctx,client,  labelsMap, namespace)
+	podList, err = getPodsByLabels(ctx, client, labelsMap, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +50,7 @@ func getFirstRunningPodWithLabels(ctx context.Context, labelsMap labels.Selector
 	return nil, fmt.Errorf("no running pods found")
 }
 
-func getPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Selector,  namespace string) (*corev1.PodList, error) {
+func getPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Selector, namespace string) (*corev1.PodList, error) {
 	podList := &corev1.PodList{}
 	err := c.List(ctx, &client.ListOptions{
 		Namespace:     namespace,
@@ -72,4 +61,3 @@ func getPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Sele
 	}
 	return podList, nil
 }
-

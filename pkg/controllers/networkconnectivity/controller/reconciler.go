@@ -1,20 +1,23 @@
 package controller
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery"
-	"io"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
@@ -23,11 +26,21 @@ const (
 	FinalizerName       = "networkmachinery.io/networkconnectivity"
 )
 
-var reconcilePeriod = 60* time.Second
+var (
+	reconcilePeriod = 10* time.Second
+
+	// StatusTypeMeta is the TypeMeta of the GCP InfrastructureStatus
+	StatusTypeMeta = metav1.TypeMeta{
+		APIVersion: v1alpha1.SchemeGroupVersion.String(),
+		Kind:       "InfrastructureStatus",
+	}
+)
 
 
-type Source struct {
 
+type PingOutput struct {
+	state v1alpha1.PingResultState
+	min,avg,max string
 }
 // ReconcileMachineDeployment reconciles a MachineDeployment object.
 type ReconcileNetworkConnectivityTest struct {
@@ -115,28 +128,75 @@ func (r *ReconcileNetworkConnectivityTest) reconcile(ctx context.Context, networ
 	}, nil
 }
 
-func (r *ReconcileNetworkConnectivityTest) Ping(ctx context.Context, source v1alpha1.NetworkSourceEndpoint, host string) error {
-	reader, err := utils.PodExec(ctx, r.config, source.Namespace, source.Name, source.Container, fmt.Sprintf("ping -c1 %s", host))
-	p := make([]byte, 32)
-	for {
-		n, err := reader.Read(p)
-		if err != nil{
-			if err == io.EOF {
-				fmt.Println(string(p[:n])) //should handle any remainding bytes.
-				break
-			}
-			return err
-		}
-		fmt.Println(string(p[:n]))
+
+func (r *ReconcileNetworkConnectivityTest) Ping(ctx context.Context, source v1alpha1.NetworkSourceEndpoint, host string) (*PingOutput, error) {
+	var stdOut, stdErr bytes.Buffer
+	execOpts := utils.ExecOptions{
+		Namespace: source.Namespace,
+		Name: source.Name,
+		Command: fmt.Sprintf("ping -c3 %s", host),
+		Container: source.Container,
+		StandardCmdOpts: utils.StandardCmdOpts{
+			StdErr: &stdErr,
+			StdOut: &stdOut,
+		},
 	}
-	return err
+
+	err := utils.PodExec(ctx, r.config,execOpts)
+	if err != nil {
+		return &PingOutput{state: v1alpha1.FailedPing}, err
+	}
+
+	ping := &utils.Ping{}
+	utils.ParsePingOutput(stdOut.Bytes(), ping)
+
+	return &PingOutput{
+		state: v1alpha1.SuccessPing,
+		min: ping.Min(),
+		max: ping.Max(),
+		avg: ping.Average(),
+	}, nil
 }
+
+
 func (r *ReconcileNetworkConnectivityTest) reconcileLayerThree(ctx context.Context, networkConnectivityTest *v1alpha1.NetworkConnectivityTest) (reconcile.Result, error)  {
-	for _, destination :=range networkConnectivityTest.Spec.Destinations {
-		err := r.Ping(ctx, networkConnectivityTest.Spec.Source, destination.IP)
-		if err != nil {
-			return apimachinery.ReconcileErr(err)
+	var (
+		status = &v1alpha1.PingStatus{
+			TypeMeta: StatusTypeMeta,
+			PingIPEndpoints: []v1alpha1.PingIPEndpoint{},
 		}
+	)
+	for _, destination :=range networkConnectivityTest.Spec.Destinations {
+		pingOut, err := r.Ping(ctx, networkConnectivityTest.Spec.Source, destination.IP)
+		if err != nil {
+			status.PingIPEndpoints = append(status.PingIPEndpoints, v1alpha1.PingIPEndpoint{
+				IP: destination.IP,
+				PingResult: v1alpha1.PingResult{
+					State: v1alpha1.FailedPing,
+				},
+			})
+			fmt.Println(status.PingIPEndpoints)
+		} else {
+			status.PingIPEndpoints = append(status.PingIPEndpoints, v1alpha1.PingIPEndpoint{
+				IP: destination.IP,
+				PingResult: v1alpha1.PingResult{
+					State: v1alpha1.SuccessPing,
+					Average: pingOut.avg,
+					Max: pingOut.max,
+					Min: pingOut.min,
+				},
+			})
+		}
+		fmt.Println(pingOut)
+		fmt.Println(status.PingIPEndpoints)
+	}
+
+	err := apimachinery.TryUpdateStatus(ctx, retry.DefaultBackoff, r.client, networkConnectivityTest, func() error {
+		networkConnectivityTest.Status.TestStatus = &runtime.RawExtension{Object: status}
+		return nil
+	})
+	if err != nil {
+		return apimachinery.ReconcileErr(err)
 	}
 
 	return reconcile.Result{

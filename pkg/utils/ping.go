@@ -1,64 +1,36 @@
 package utils
 
 import (
-	"bytes"
-	"fmt"
-	"os"
-	"os/exec"
 	"regexp"
-	"strings"
 	"time"
 )
 
 type Ping struct {
-	average time.Duration
+	min,average,max time.Duration
 }
 
-func tes() {
-	cmd := exec.Command("ping", "8.8.8.8")
-	// Linux version
-	//cmd := exec.Command("ping", "-c 4", "8.8.8.8")
-	cmdOutput := &bytes.Buffer{}
-	cmd.Stdout = cmdOutput
-	printCommand(cmd)
-	err := cmd.Run()
-	printError(err)
-	output := cmdOutput.Bytes()
-	printOutput(output)
-	ping := Ping{}
-	parseOutput(output, &ping)
-
-	fmt.Println(ping)
+func (p *Ping) Min() string {
+	return p.min.String()
 }
 
-func printCommand(cmd *exec.Cmd) {
-	fmt.Printf("==> Executing: %s\n", strings.Join(cmd.Args, " "))
+func (p *Ping) Average() string {
+	return p.average.String()
 }
 
-func printError(err error) {
-	if err != nil {
-		os.Stderr.WriteString(fmt.Sprintf("==> Error: %s\n", err.Error()))
-	}
+func (p *Ping) Max() string {
+	return p.max.String()
 }
 
-func printOutput(outs []byte) {
-	if len(outs) > 0 {
-		fmt.Printf("==> Output: %s\n", string(outs))
-	}
+
+
+func ParsePingOutput(outs []byte, ping *Ping) {
+	var average = regexp.MustCompile(`min\/avg\/max = (0\.\d+)\/(0\.\d+)\/(0\.\d+) ms`)
+	result := average.FindAllStringSubmatch(string(outs), -1)
+	 if len(result) > 0 {
+		 	ping.min, _ = time.ParseDuration(result[0][1] + "ms")
+	 		ping.average, _ = time.ParseDuration(result[0][2] + "ms")
+	 		ping.max, _ = time.ParseDuration(result[0][3]+ "ms")
+	 }
 }
 
-func parseOutput(outs []byte, ping *Ping) {
-	var average = regexp.MustCompile(`Average = (\d+ms)`)
-	result := average.FindStringSubmatch(string(outs))
 
-	if len(result) > 0 {
-		ping.average, _ = time.ParseDuration(result[1])
-	}
-	// Linux version
-	/*var average = regexp.MustCompile(`min\/avg\/max\/mdev = (0\.\d+)\/(0\.\d+)\/(0\.\d+)\/(0\.\d+) ms`)
-	  result := average.FindAllStringSubmatch(string(outs), -1)
-
-	  if len(result) > 0 {
-	  		ping.average, _ = time.ParseDuration(result[0][2] + "ms")
-	  }*/
-}
