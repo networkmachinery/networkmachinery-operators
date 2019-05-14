@@ -21,8 +21,6 @@ func (p *Ping) Max() string {
 	return p.max.String()
 }
 
-
-
 func ParsePingOutput(outs []byte, ping *Ping) {
 	var average = regexp.MustCompile(`min\/avg\/max = (0\.\d+)\/(0\.\d+)\/(0\.\d+) ms`)
 	result := average.FindAllStringSubmatch(string(outs), -1)

@@ -57,6 +57,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&NetworkConnectivityTest{},
 		&NetworkConnectivityTestList{},
 		&PingStatus{},
+		&NetcatStatus{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

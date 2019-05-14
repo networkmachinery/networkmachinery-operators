@@ -1,0 +1,20 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkConnectivityTest
+metadata:
+  name: port-test
+spec:
+  layer: "4"
+  source:
+    name: "kube-apiserver-kind-1-control-plane"
+    namespace: "kube-system"
+    container: ""
+  destinations:
+    - kind: pod
+      namespace: kube-system
+      name: coredns-576cbf47c7-2sfxm
+      port: "53"
+    - kind: service
+      namespace: default
+      name: kubernetes
+      port: "443"

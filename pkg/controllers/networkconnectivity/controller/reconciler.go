@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+
 	"github.com/go-logr/logr"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
@@ -12,30 +13,17 @@ import (
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 )
 
 const (
 	LogKey = "NetworkConnnectivityTest"
 	// FinalizerName is the controlplane controller finalizer.
-	FinalizerName       = "networkmachinery.io/networkconnectivity"
+	FinalizerName = "networkmachinery.io/networkconnectivity"
 )
 
-var (
-	reconcilePeriod = 10* time.Second
-
-
-)
-
-
-
-type PingOutput struct {
-	state v1alpha1.PingResultState
-	min,avg,max string
-}
 // ReconcileMachineDeployment reconciles a MachineDeployment object.
 type ReconcileNetworkConnectivityTest struct {
-	config *rest.Config
+	config   *rest.Config
 	logger   logr.Logger
 	client   client.Client
 	ctx      context.Context
@@ -48,7 +36,6 @@ func (r *ReconcileNetworkConnectivityTest) InjectConfig(config *rest.Config) err
 	r.config = config
 	return nil
 }
-
 
 func (r *ReconcileNetworkConnectivityTest) InjectClient(client client.Client) error {
 	r.client = client
@@ -78,7 +65,6 @@ func (r *ReconcileNetworkConnectivityTest) Reconcile(request reconcile.Request) 
 
 	return r.reconcile(r.ctx, networkConnectivityTest)
 }
-
 
 func (r *ReconcileNetworkConnectivityTest) reconcile(ctx context.Context, networkConnectivityTest *v1alpha1.NetworkConnectivityTest) (reconcile.Result, error) {
 	// Finalizer is needed to make sure to clean up installed debugging tools after reconciliation

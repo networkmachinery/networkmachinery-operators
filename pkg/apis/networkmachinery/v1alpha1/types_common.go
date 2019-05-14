@@ -79,3 +79,10 @@ type Status struct {
 	// State can be filled by the operating controller with what ever data it needs.
 	State string `json:"state,omitempty"`
 }
+
+type Params struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	IP        string `json:"ip"`
+	Port      string `json:"port,omitempty"`
+}

@@ -27,11 +27,6 @@ type PingIPEndpoint struct {
 	PingResult PingResult `json:"pingResult"`
 }
 
-type Params struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
-	IP        string `json:"ip"`
-}
 type PingPodEndpoint struct {
 	PodParams  Params     `json:"podParams"`
 	PingResult PingResult `json:"pingResult"`

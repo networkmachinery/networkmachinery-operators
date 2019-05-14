@@ -1,25 +1,32 @@
 package controller
 
 import (
+	"context"
 	"fmt"
+	"time"
+
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
-	// StatusTypeMeta is the TypeMeta of the GCP InfrastructureStatus
-	StatusTypeMeta = metav1.TypeMeta{
+	reconcilePeriod    = 10 * time.Second
+	PingStatusTypeMeta = metav1.TypeMeta{
 		APIVersion: v1alpha1.SchemeGroupVersion.String(),
-		Kind:       "InfrastructureStatus",
+		Kind:       "PingStatus",
 	}
 )
+
+type PingOutput struct {
+	state         v1alpha1.PingResultState
+	min, avg, max string
+}
 
 func (r *ReconcileNetworkConnectivityTest) IPPing(ctx context.Context, status *v1alpha1.PingStatus, source *v1alpha1.NetworkSourceEndpoint, destination string) {
 	pingOut, err := Ping(ctx, r.config, *source, destination)
@@ -34,24 +41,23 @@ func (r *ReconcileNetworkConnectivityTest) IPPing(ctx context.Context, status *v
 		status.PingIPEndpoints = append(status.PingIPEndpoints, v1alpha1.PingIPEndpoint{
 			IP: destination,
 			PingResult: v1alpha1.PingResult{
-				State: v1alpha1.SuccessPing,
+				State:   v1alpha1.SuccessPing,
 				Average: pingOut.avg,
-				Max: pingOut.max,
-				Min: pingOut.min,
+				Max:     pingOut.max,
+				Min:     pingOut.min,
 			},
 		})
 	}
 }
 
-
 func (r *ReconcileNetworkConnectivityTest) PodPing(ctx context.Context, status *v1alpha1.PingStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) error {
 	destinationPod := &corev1.Pod{}
-	err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name},destinationPod)
+	err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name}, destinationPod)
 	if err != nil {
 		return err
 	}
 
-	podIP :=  destinationPod.Status.PodIP
+	podIP := destinationPod.Status.PodIP
 	if len(podIP) == 0 {
 		return fmt.Errorf("could not find pod IP to ping")
 	}
@@ -61,8 +67,8 @@ func (r *ReconcileNetworkConnectivityTest) PodPing(ctx context.Context, status *
 		status.PingPodEndpoints = append(status.PingPodEndpoints, v1alpha1.PingPodEndpoint{
 			PodParams: v1alpha1.Params{
 				Namespace: destination.Namespace,
-				Name: destination.Name,
-				IP: podIP,
+				Name:      destination.Name,
+				IP:        podIP,
 			},
 			PingResult: v1alpha1.PingResult{
 				State: v1alpha1.FailedPing,
@@ -72,14 +78,14 @@ func (r *ReconcileNetworkConnectivityTest) PodPing(ctx context.Context, status *
 		status.PingPodEndpoints = append(status.PingPodEndpoints, v1alpha1.PingPodEndpoint{
 			PodParams: v1alpha1.Params{
 				Namespace: destination.Namespace,
-				Name: destination.Name,
-				IP: podIP,
+				Name:      destination.Name,
+				IP:        podIP,
 			},
 			PingResult: v1alpha1.PingResult{
-				State: v1alpha1.SuccessPing,
+				State:   v1alpha1.SuccessPing,
 				Average: pingOut.avg,
-				Max: pingOut.max,
-				Min: pingOut.min,
+				Max:     pingOut.max,
+				Min:     pingOut.min,
 			},
 		})
 	}
@@ -88,7 +94,7 @@ func (r *ReconcileNetworkConnectivityTest) PodPing(ctx context.Context, status *
 
 func (r *ReconcileNetworkConnectivityTest) ServicePing(ctx context.Context, status *v1alpha1.PingStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) error {
 	endpoints := &corev1.Endpoints{}
-	err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name},endpoints)
+	err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name}, endpoints)
 	if err != nil {
 		return err
 	}
@@ -97,7 +103,7 @@ func (r *ReconcileNetworkConnectivityTest) ServicePing(ctx context.Context, stat
 	// TODO: handle multiple subsets
 	for _, endpoint := range endpoints.Subsets[0].Addresses {
 		pingOut, err := Ping(ctx, r.config, *source, endpoint.IP)
-		if err !=nil {
+		if err != nil {
 			pingIPEndpoints = append(pingIPEndpoints, v1alpha1.PingIPEndpoint{
 				IP: endpoint.IP,
 				PingResult: v1alpha1.PingResult{
@@ -108,43 +114,40 @@ func (r *ReconcileNetworkConnectivityTest) ServicePing(ctx context.Context, stat
 			pingIPEndpoints = append(pingIPEndpoints, v1alpha1.PingIPEndpoint{
 				IP: endpoint.IP,
 				PingResult: v1alpha1.PingResult{
-					State: v1alpha1.SuccessPing,
+					State:   v1alpha1.SuccessPing,
 					Average: pingOut.avg,
-					Max: pingOut.max,
-					Min: pingOut.min,
+					Max:     pingOut.max,
+					Min:     pingOut.min,
 				},
 			})
 		}
 	}
 
 	service := &corev1.Service{}
-	err = r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name},service)
+	err = r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name}, service)
 	if err != nil {
 		return err
 	}
 
 	status.PingServiceEndpoint = append(status.PingServiceEndpoint, v1alpha1.PingServiceEndpoint{
 		ServiceParams: v1alpha1.Params{
-			IP: service.Spec.ClusterIP,
-			Name: destination.Name,
+			IP:        service.Spec.ClusterIP,
+			Name:      destination.Name,
 			Namespace: destination.Namespace,
 		},
 		ServiceResults: pingIPEndpoints,
 	})
 
-
 	return nil
 }
 
-
-func (r *ReconcileNetworkConnectivityTest) reconcileLayerThree(ctx context.Context, networkConnectivityTest *v1alpha1.NetworkConnectivityTest) (reconcile.Result, error)  {
+func (r *ReconcileNetworkConnectivityTest) reconcileLayerThree(ctx context.Context, networkConnectivityTest *v1alpha1.NetworkConnectivityTest) (reconcile.Result, error) {
 	var (
 		status = &v1alpha1.PingStatus{
-			TypeMeta: StatusTypeMeta,
-			PingIPEndpoints: []v1alpha1.PingIPEndpoint{},
+			TypeMeta: PingStatusTypeMeta,
 		}
 	)
-	for _, destination :=range networkConnectivityTest.Spec.Destinations {
+	for _, destination := range networkConnectivityTest.Spec.Destinations {
 		switch destination.Kind {
 		case v1alpha1.IP:
 			r.IPPing(ctx, status, &networkConnectivityTest.Spec.Source, destination.IP)
@@ -173,4 +176,3 @@ func (r *ReconcileNetworkConnectivityTest) reconcileLayerThree(ctx context.Conte
 		RequeueAfter: reconcilePeriod,
 	}, nil
 }
-
