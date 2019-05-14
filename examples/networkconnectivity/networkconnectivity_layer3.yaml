@@ -21,14 +21,3 @@ spec:
       - kind: service
         namespace: default
         name: kubernetes
-
-#      - kind: pod
-#        name: "pod-name"
-#        namespace: "pod-namespace"
-#      - kind: pod
-#        destinationSelector:
-#          matchLabels:
-#            release: "stable"
-#      - kind: service
-#        name: "pod-name"
-#        namespace: "pod-namespace"

@@ -14,8 +14,9 @@ help:
 	@echo 'Management commands for networkmachinery-operators:'
 	@echo
 	@echo 'Usage:'
-	@echo '    make start-network-monitor          			Starts the network monitor controller.'
-	@echo '    make start-networkconnectivity-test          Starts the network connectivity test controller.'
+	@echo '    make start-network-monitor          						Starts the network monitor controller.'
+	@echo '    make start-network-control-controller          			Starts the network control controller.'
+	@echo '    make start-networkconnectivity-test          			Starts the network connectivity test controller.'
 	@echo '    make generate        Runs code-gen for the project APIs'
 	@echo '    make build           Compile the project.'
 	@echo '    make install         installs the networkmachinery-hyper binary'
@@ -83,6 +84,10 @@ test:
 .PHONY: start-network-monitor
 start-network-monitor:
 	@go run cmd/networkmachinery-hyper/main.go networkmonitor-controller
+
+.PHONY: start-network-control-controller
+start-network-control-controller:
+	@go run cmd/networkmachinery-hyper/main.go network-control-controller
 
 .PHONY: start-networkconnectivity-test
 start-networkconnectivity-test:
