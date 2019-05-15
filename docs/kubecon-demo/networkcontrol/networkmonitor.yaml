@@ -1,0 +1,30 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkMonitor
+metadata:
+  name: sflow-monitor
+spec:
+  monitoringEndpoint:
+    ip: "10.0.0.10"
+    port: "8008"
+  flows:
+    - name: "elephant-flow"
+      keys: "ipsource,ipdestination,tcpsourceport,tcpdestinationport" #https://sflow-rt.com/define_flow.php#keys
+      value: "frames"
+      log: "true"
+    - name: "icmp-flow"
+      keys: "ipsource,ipdestination" #https://sflow-rt.com/define_flow.php#keys
+      value: "frames"
+      log: "true"
+#      filter: "sourcegroup=external&destinationgroup=internal"
+#      flowStart: false
+#      activeTime out: 60
+  thresholds:
+    - name: "ddos2"
+      metric: "elephant-flow"
+      value: 100
+      flowName: "elephant-flow"
+#      byFlow: "true"
+  eventsConfig:
+    maxEvents: "5"
+    timeout: "60"
