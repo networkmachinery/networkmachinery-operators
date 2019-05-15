@@ -168,6 +168,7 @@ func (in *NetcatServiceEndpoint) DeepCopyInto(out *NetcatServiceEndpoint) {
 		*out = make([]NetcatIPEndpoint, len(*in))
 		copy(*out, *in)
 	}
+	out.ServiceResultsDirect = in.ServiceResultsDirect
 	return
 }
 

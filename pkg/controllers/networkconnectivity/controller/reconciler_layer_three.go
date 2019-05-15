@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	reconcilePeriod    = 10 * time.Second
+	reconcilePeriod = 5 * time.Second
+
 	PingStatusTypeMeta = metav1.TypeMeta{
 		APIVersion: v1alpha1.SchemeGroupVersion.String(),
 		Kind:       "PingStatus",

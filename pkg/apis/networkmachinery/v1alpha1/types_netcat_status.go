@@ -34,8 +34,9 @@ type NetcatPodEndpoint struct {
 }
 
 type NetcatServiceEndpoint struct {
-	ServiceParams  Params             `json:"serviceParams"`
-	ServiceResults []NetcatIPEndpoint `json:"serviceResults"`
+	ServiceParams        Params             `json:"serviceParams"`
+	ServiceResults       []NetcatIPEndpoint `json:"serviceResultsEndpoints,omitempty"`
+	ServiceResultsDirect NetcatIPEndpoint   `json:"serviceResultsDirect,omitempty"`
 }
 
 type NetcatResult struct {

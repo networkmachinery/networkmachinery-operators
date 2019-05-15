@@ -44,7 +44,7 @@ func NetCat(ctx context.Context, config *rest.Config, source v1alpha1.NetworkSou
 	execOpts := utils.ExecOptions{
 		Namespace: source.Namespace,
 		Name:      source.Name,
-		Command:   fmt.Sprintf("nc -z -v %s %s", host, port),
+		Command:   fmt.Sprintf("nc -z -v %s %s 2>&1", host, port),
 		Container: source.Container,
 		StandardCmdOpts: utils.StandardCmdOpts{
 			StdErr: &stdErr,
@@ -58,7 +58,7 @@ func NetCat(ctx context.Context, config *rest.Config, source v1alpha1.NetworkSou
 	}
 
 	netcat := &utils.Netcat{}
-	utils.ParseNetcatOutput(stdOut.Bytes(), netcat)
+	utils.ParseNetcatOutput(stdOut.String(), netcat)
 
 	return &NetcatOutput{
 		state: netcat.State(),

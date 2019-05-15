@@ -24,25 +24,16 @@ type NetcatOutput struct {
 	state v1alpha1.NetcatResultState
 }
 
-func (r *ReconcileNetworkConnectivityTest) IPNetcat(ctx context.Context, status *v1alpha1.NetcatStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) {
-	netcatOut, err := NetCat(ctx, r.config, *source, destination.IP, destination.Port)
-	if err != nil || netcatOut.state == v1alpha1.Refused {
-		status.NetcatIPEndpoints = append(status.NetcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
-			IP:   destination.IP,
-			Port: destination.Port,
-			NetcatResult: v1alpha1.NetcatResult{
-				State: v1alpha1.Refused,
-			},
-		})
-	} else {
-		status.NetcatIPEndpoints = append(status.NetcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
-			IP:   destination.IP,
-			Port: destination.Port,
-			NetcatResult: v1alpha1.NetcatResult{
-				State: v1alpha1.Succeeded,
-			},
-		})
-	}
+func (r *ReconcileNetworkConnectivityTest) IPNetcat(ctx context.Context, status *v1alpha1.NetcatStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) error {
+	netcatOut, _ := NetCat(ctx, r.config, *source, destination.IP, destination.Port)
+	status.NetcatIPEndpoints = append(status.NetcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
+		IP:   destination.IP,
+		Port: destination.Port,
+		NetcatResult: v1alpha1.NetcatResult{
+			State: netcatOut.state,
+		},
+	})
+	return nil
 }
 
 func (r *ReconcileNetworkConnectivityTest) PodNetcat(ctx context.Context, status *v1alpha1.NetcatStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) error {
@@ -57,9 +48,9 @@ func (r *ReconcileNetworkConnectivityTest) PodNetcat(ctx context.Context, status
 		return fmt.Errorf("could not find pod IP to netcat")
 	}
 
-	netcatOut, err := NetCat(ctx, r.config, *source, podIP, destination.Port)
-	if err != nil || netcatOut.state == v1alpha1.Refused {
-		status.NetcatPodEndpoints = append(status.NetcatPodEndpoints, v1alpha1.NetcatPodEndpoint{
+	netcatOut, _ := NetCat(ctx, r.config, *source, podIP, destination.Port)
+	status.NetcatPodEndpoints = append(status.NetcatPodEndpoints,
+		v1alpha1.NetcatPodEndpoint{
 			PodParams: v1alpha1.Params{
 				Namespace: destination.Namespace,
 				Name:      destination.Name,
@@ -67,22 +58,9 @@ func (r *ReconcileNetworkConnectivityTest) PodNetcat(ctx context.Context, status
 				Port:      destination.Port,
 			},
 			NetcatResult: v1alpha1.NetcatResult{
-				State: v1alpha1.Succeeded,
+				State: netcatOut.state,
 			},
 		})
-	} else {
-		status.NetcatPodEndpoints = append(status.NetcatPodEndpoints, v1alpha1.NetcatPodEndpoint{
-			PodParams: v1alpha1.Params{
-				Namespace: destination.Namespace,
-				Name:      destination.Name,
-				IP:        podIP,
-				Port:      destination.Port,
-			},
-			NetcatResult: v1alpha1.NetcatResult{
-				State: v1alpha1.Succeeded,
-			},
-		})
-	}
 	return nil
 }
 
@@ -101,38 +79,36 @@ func (r *ReconcileNetworkConnectivityTest) ServiceNetcat(ctx context.Context, st
 		return err
 	}
 
-	var netcatIPEndpoints []v1alpha1.NetcatIPEndpoint
 	// TODO: handle multiple subsets and separeate error from state
+	var netcatIPEndpoints []v1alpha1.NetcatIPEndpoint
 	for _, endpoint := range endpoints.Subsets[0].Addresses {
 		endPointPort := strconv.Itoa(int(endpoints.Subsets[0].Ports[0].Port))
-		netcatOut, err := NetCat(ctx, r.config, *source, endpoint.IP, endPointPort)
-		if err != nil || netcatOut.state == v1alpha1.Refused {
-			netcatIPEndpoints = append(netcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
-				IP:   endpoint.IP,
-				Port: endPointPort,
-				NetcatResult: v1alpha1.NetcatResult{
-					State: v1alpha1.Refused,
-				},
-			})
-		} else {
-			netcatIPEndpoints = append(netcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
-				IP:   endpoint.IP,
-				Port: endPointPort,
-				NetcatResult: v1alpha1.NetcatResult{
-					State: v1alpha1.Succeeded,
-				},
-			})
-		}
+		netcatOut, _ := NetCat(ctx, r.config, *source, endpoint.IP, endPointPort)
+		netcatIPEndpoints = append(netcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
+			IP:   endpoint.IP,
+			Port: endPointPort,
+			NetcatResult: v1alpha1.NetcatResult{
+				State: netcatOut.state,
+			},
+		})
 	}
-
+	// This goes directly to the service IP and port
+	directServiceNetCatOut, _ := NetCat(ctx, r.config, *source, service.Spec.ClusterIP, destination.Port)
 	status.NetcatServiceEndpoints = append(status.NetcatServiceEndpoints, v1alpha1.NetcatServiceEndpoint{
 		ServiceParams: v1alpha1.Params{
 			IP:        service.Spec.ClusterIP,
-			Port:      strconv.Itoa(int(service.Spec.Ports[0].Port)),
+			Port:      destination.Port,
 			Name:      destination.Name,
 			Namespace: destination.Namespace,
 		},
 		ServiceResults: netcatIPEndpoints,
+		ServiceResultsDirect: v1alpha1.NetcatIPEndpoint{
+			IP:   service.Spec.ClusterIP,
+			Port: destination.Port,
+			NetcatResult: v1alpha1.NetcatResult{
+				State: directServiceNetCatOut.state,
+			},
+		},
 	})
 	return nil
 }
