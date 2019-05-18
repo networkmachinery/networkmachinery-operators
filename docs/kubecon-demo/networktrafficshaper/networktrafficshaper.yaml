@@ -1,0 +1,27 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkTrafficShaper
+metadata:
+  name: inject-delay
+spec:
+  targets:
+    - kind: pod | service
+      name: podName | serviceName
+      namespace: namespaceName
+      configuration:
+        device: eth0
+        delay: 200ms
+
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkTrafficShaper
+metadata:
+  name: inject-loss
+spec:
+  targets:
+    - kind: pod | service
+      name: podName | serviceName
+      namespace: namespaceName
+      configuration:
+        device: eth0
+        loss: 100%

@@ -16,9 +16,6 @@ spec:
       keys: "ipsource,ipdestination" #https://sflow-rt.com/define_flow.php#keys
       value: "frames"
       log: "true"
-#      filter: "sourcegroup=external&destinationgroup=internal"
-#      flowStart: false
-#      activeTime out: 60
   thresholds:
     - name: "ddos2"
       metric: "elephant-flow"

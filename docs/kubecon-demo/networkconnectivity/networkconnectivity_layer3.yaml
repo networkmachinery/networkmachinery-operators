@@ -6,16 +6,16 @@ metadata:
 spec:
     layer: "3"
     source:
-      name: "kube-apiserver-kind-1-control-plane"
+      name: "kube-apiserver-kind-kubecon2019-control-plane"
       namespace: "kube-system"
       container: ""
     destinations:
       - kind: pod
         namespace: default
-        name: somepod
+        name: demo-pod-1
       - kind: pod
         namespace: default
-        name: somepod2
+        name: demo-pod-2
       - kind: ip
         ip: "10.1.2.24"
       - kind: service

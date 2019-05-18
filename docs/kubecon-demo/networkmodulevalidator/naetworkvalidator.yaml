@@ -2,14 +2,16 @@
 apiVersion: networkmachinery.io/v1alpha1
 kind: NetworkModulesValidator
 metadata:
-  name: port-test
+  name: module-validator-daemon
 spec:
-  modules:
-    net:
-      bridge:
-        bridge-nf-call-iptables: 1
-        ipv4:
-          ip_forward: 1
-
+  nodes: all
+  net:
+    bridge:
+      bridge-nf-call-iptables: 1 # This setting is necessary for the Linux kernel to be able to perform address translation in packets going to and from hosted containers.
+      ipv4:
+        ip_forward: 1 #IP forwarding is a kernel setting that allows forwarding of the traffic coming from one interface to be routed to another interface.
+        arp_proxy:  # important for Calico to function
+          interface: eth0
+          value: 1
 ## This is important, sometimes human operators forget to set it back on after debugging, Which would lead
 ## REference https://gravitational.com/blog/troubleshooting-kubernetes-networking/

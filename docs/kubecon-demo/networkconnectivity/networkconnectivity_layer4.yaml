@@ -6,14 +6,14 @@ metadata:
 spec:
   layer: "4"
   source:
-    name: "kube-apiserver-kind-1-control-plane"
+    name: "kube-apiserver-kind-kubecon2019-control-plane"
     namespace: "kube-system"
     container: ""
   destinations:
     - kind: pod
       namespace: kube-system
       name: coredns-576cbf47c7-2sfxm
-      port: "53"
+      port: "51"
     - kind: service
       namespace: default
       name: kubernetes
