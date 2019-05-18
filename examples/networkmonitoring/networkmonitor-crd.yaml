@@ -40,8 +40,6 @@ spec:
                 arbitrary metadata. They are not queryable and should be preserved
                 when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations'
               type: object
-              additionalProperties:
-                type: string
             clusterName:
               description: The name of the cluster which the object belongs to. This
                 is used to distinguish resources with same name and namespace in different
@@ -276,8 +274,6 @@ spec:
                 and categorize (scope and select) objects. May match selectors of
                 replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels'
               type: object
-              additionalProperties:
-                type: string
             name:
               description: 'Name must be unique within a namespace. Is required when
                 creating resources, although some resources may allow a client to
@@ -424,6 +420,18 @@ spec:
         status:
           type: object
           properties:
+            lastError:
+              description: ObservedGeneration is the most recent generation observed
+                for this resource. LastError holds information about the last occurred
+                error during an operation.
+              type: object
+              required:
+              - description
+              properties:
+                description:
+                  description: A human readable message indicating details about the
+                    last error.
+                  type: string
             lastOperation:
               description: LastOperation holds information about the last operation
                 on the resource.
@@ -455,15 +463,6 @@ spec:
                   description: Type of the last operation, one of Create, Reconcile,
                     Delete.
                   type: string
-            observedGeneration:
-              description: ObservedGeneration is the most recent generation observed
-                for this resource.
-              type: integer
-              format: int64
-            state:
-              description: State can be filled by the operating controller with what
-                ever data it needs.
-              type: string
   additionalPrinterColumns:
   - name: Age
     type: date

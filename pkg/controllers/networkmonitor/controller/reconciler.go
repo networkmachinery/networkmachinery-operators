@@ -142,7 +142,7 @@ func (r *ReconcileNetworkMonitor) reconcile(ctx context.Context, networkMonitor 
 	}
 	// this is to allow for polling fresh events out of sFlow
 	return reconcile.Result{
-		RequeueAfter: 30 * time.Second,
+		RequeueAfter: 5 * time.Second,
 	}, nil
 }
 

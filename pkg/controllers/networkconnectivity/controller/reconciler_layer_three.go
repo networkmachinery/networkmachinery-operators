@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	reconcilePeriod = 5 * time.Second
+	reconcilePeriod = 1 * time.Second
 
 	PingStatusTypeMeta = metav1.TypeMeta{
 		APIVersion: v1alpha1.SchemeGroupVersion.String(),
@@ -55,6 +55,15 @@ func (r *ReconcileNetworkConnectivityTest) PodPing(ctx context.Context, status *
 	destinationPod := &corev1.Pod{}
 	err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name}, destinationPod)
 	if err != nil {
+		status.PingPodEndpoints = append(status.PingPodEndpoints, v1alpha1.PingPodEndpoint{
+			PodParams: v1alpha1.Params{
+				Namespace: destination.Namespace,
+				Name:      destination.Name,
+			},
+			PingResult: v1alpha1.PingResult{
+				State: v1alpha1.FailedPing,
+			},
+		})
 		return err
 	}
 

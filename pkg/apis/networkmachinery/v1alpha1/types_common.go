@@ -16,12 +16,20 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+// LastError indicates the last occurred error for an operation on a resource.
+type LastError struct {
+	// A human readable message indicating details about the last error.
+	Description string `json:"description"`
+}
+
 // Valid values for event types
 const (
 	// Information only and will not cause any problems
 	EventTypeNormal string = "Normal"
 	// These events are to warn that something might go wrong
 	EventTypeWarning string = "Warning"
+	// These events are to show errors
+	EventTypeError string = "Error"
 )
 
 // LastOperationType is a string alias.
@@ -75,9 +83,9 @@ type Status struct {
 	// +optional
 	LastOperation *LastOperation `json:"lastOperation,omitempty"`
 	// ObservedGeneration is the most recent generation observed for this resource.
-	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
-	// State can be filled by the operating controller with what ever data it needs.
-	State string `json:"state,omitempty"`
+	// LastError holds information about the last occurred error during an operation.
+	// +optional
+	LastError LastError `json:"lastError,omitempty"`
 }
 
 type Params struct {
