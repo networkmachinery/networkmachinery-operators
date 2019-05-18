@@ -1,0 +1,27 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkPerformanceTest
+metadata:
+  name: perf-test
+spec:
+  type: iperf
+  clients:
+    - kind: pod | service
+      name: podName | serviceName
+      namespace: namespaceName
+      configuration:
+        protocol: tcp | udp
+        bandwidth: 1000m #Mbps
+        bidrectional: true | false
+    - kind: node
+      name: nodeName
+      configuration:
+        protocol: tcp | udp
+        bandwidth: 1000m #Mbps
+        bidrectional: true | false
+  servers:
+    - kind: ip
+      ip: 1.2.3.4
+    - kind: pod | service
+      name: podName | serviceName
+      namespace: namespaceName

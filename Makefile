@@ -77,6 +77,14 @@ push: tag
 clean:
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
 
+.PHONY: requirements
+requirements:
+	@GO111MODULE=on go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.16.0
+
+.PHONY: lint
+lint:
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run
+
 .PHONY: test
 test:
 	go test ./...

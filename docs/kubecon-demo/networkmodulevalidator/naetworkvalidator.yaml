@@ -1,0 +1,15 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkModulesValidator
+metadata:
+  name: port-test
+spec:
+  modules:
+    net:
+      bridge:
+        bridge-nf-call-iptables: 1
+        ipv4:
+          ip_forward: 1
+
+## This is important, sometimes human operators forget to set it back on after debugging, Which would lead
+## REference https://gravitational.com/blog/troubleshooting-kubernetes-networking/
