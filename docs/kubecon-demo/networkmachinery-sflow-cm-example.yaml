@@ -1,0 +1,14 @@
+# config map for configuring the networkmachinery-sflow init container
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sflow-ovs-installer-cm
+  namespace: default
+data:
+  bridge_name: "k-vswitch0"
+  collector_ip: "10.0.0.10"
+  collector_port: "6343"
+  agent_ip: "10.244.0.1"
+  header_bytes: "128"
+  sampling_n: "64"
+  polling_secs: "5"

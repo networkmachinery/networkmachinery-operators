@@ -11,11 +11,11 @@ spec:
       container: ""
     destinations:
       - kind: pod
-        namespace: default
         name: demo-pod-1
-      - kind: pod
         namespace: default
+      - kind: pod
         name: demo-pod-2
+        namespace: default
       - kind: ip
         ip: "8.8.8.8"
       - kind: service

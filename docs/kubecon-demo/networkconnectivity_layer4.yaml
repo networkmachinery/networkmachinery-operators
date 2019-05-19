@@ -2,22 +2,15 @@
 apiVersion: networkmachinery.io/v1alpha1
 kind: NetworkConnectivityTest
 metadata:
-  name: smokeping
+  name: port-test
 spec:
-  layer: "3"
+  layer: "4"
   source:
     name: "kube-apiserver-kind-kubecon2019-control-plane"
     namespace: "kube-system"
     container: ""
   destinations:
-    - kind: pod
-      namespace: default
-      name: demo-pod-1
-    - kind: pod
-      namespace: default
-      name: demo-pod-2
-    - kind: ip
-      ip: "8.8.8.8"
     - kind: service
       namespace: default
       name: demo-kubecon
+      port: "8100"

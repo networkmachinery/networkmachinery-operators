@@ -100,3 +100,7 @@ start-network-control-controller:
 .PHONY: start-networkconnectivity-test
 start-networkconnectivity-test:
 	@go run cmd/networkmachinery-hyper/main.go networkconnectivity-test-controller
+
+.PHONY: start-network-trafficshaper
+start-networkconnectivity-test:
+	@go run cmd/networkmachinery-hyper/main.go networkconnectivity-test-controller

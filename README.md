@@ -1,10 +1,10 @@
 # Networkmachinery-operators
 
-NetworkMachinery is currently a PoC  meant providing a catalog of network troubleshooting operators. Examples of network operators can be found in the image below:
+NetworkMachinery is currently a PoC  meant for providing a catalog of network troubleshooting operators ( currently in-tree). Examples of network operators can be found in the image below:
 
-![NetworkMachinery](docs/imgs/2019-05-18-19-31-21.png)
+![NetworkMachinery](docs/imgs/2019-05-19-20-44-05.png)
 
-Only the ones highlightes are the ones implemented at the moment.
+Only the ones highlighted are the ones implemented at the moment.
 
 ## How to use
 

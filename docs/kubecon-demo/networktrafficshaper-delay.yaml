@@ -5,9 +5,8 @@ metadata:
   name: inject-delay
 spec:
   targets:
-    - kind: pod | selector
-      name: podName
-      namespace: namespaceName
+    - kind: selector
+      namespace: default
       targetSelector:
         matchLabels:
           app: demo-kubecon

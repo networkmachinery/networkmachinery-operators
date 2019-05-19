@@ -11,12 +11,10 @@ import (
 
 func shapeTraffic(ctx context.Context, config *rest.Config, namespace, name, device, value, shapeType string) error {
 	command := fmt.Sprintf("tc qdisc add dev %s root netem %s %s", device, shapeType, value)
-	fmt.Println(command)
 	return shape(ctx, config, namespace, name, command)
 }
 func undoShape(ctx context.Context, config *rest.Config, namespace, name, device string) error {
 	command := fmt.Sprintf("tc qdisc del dev %s root", device)
-	fmt.Println(command)
 	return shape(ctx, config, namespace, name, command)
 }
 

@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sflow-ovs-installer
+  namespace: default
+  labels:
+    app: sflow-ovs-installer
+spec:
+  selector:
+    matchLabels:
+      name: sflow-ovs-installer
+  template:
+    metadata:
+      labels:
+        name: sflow-ovs-installer
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+      volumes:
+        - name: ovs
+          hostPath:
+            path: /var/run/openvswitch
+      containers:
+        - name: sflow
+          image: sflow/sflow-rt
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8008
+            - containerPort: 6343
+      initContainers:
+        - name: sflow-ovs-installer-init
+          image: zanetworker/sflow-ovs-installer
+          imagePullPolicy: Always
+          env:
+            - name: BRIDGE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: bridge_name
+            - name: COLLECTOR_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: collector_ip
+            - name: COLLECTOR_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: collector_port
+            - name: AGENT_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: agent_ip
+            - name: HEADER_BYTES
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: header_bytes
+            - name: SAMPLING_N
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: sampling_n
+            - name: POLLING_SECS
+              valueFrom:
+                configMapKeyRef:
+                  name: sflow-ovs-installer-cm
+                  key: polling_secs
+          volumeMounts:
+            - name: ovs
+              mountPath: /var/run/openvswitch
+      restartPolicy: Always

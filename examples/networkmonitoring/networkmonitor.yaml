@@ -8,7 +8,7 @@ spec:
     ip: "10.0.0.10"
     port: "8008"
   flows:
-    - name: "elephant-flow"
+    - name: "tcp-flow"
       keys: "ipsource,ipdestination,tcpsourceport,tcpdestinationport" #https://sflow-rt.com/define_flow.php#keys
       value: "frames"
       log: "true"
@@ -20,10 +20,10 @@ spec:
 #      flowStart: false
 #      activeTime out: 60
   thresholds:
-    - name: "ddos2"
-      metric: "elephant-flow"
+    - name: "ddos"
+      metric: "tcp-flow"
       value: 100
-      flowName: "elephant-flow"
+      flowName: "tcp-flow"
 #      byFlow: "true"
   eventsConfig:
     maxEvents: "5"

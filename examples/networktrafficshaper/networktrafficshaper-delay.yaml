@@ -13,4 +13,4 @@ spec:
       configuration:
         type: delay
         device: eth0
-        value: 50ms
+        value: 200ms
