@@ -25,3 +25,5 @@ type NetworkConnectivityTestExpansion interface{}
 type NetworkMonitorExpansion interface{}
 
 type NetworkNotificationExpansion interface{}
+
+type NetworkTrafficShaperExpansion interface{}

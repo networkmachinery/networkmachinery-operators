@@ -17,6 +17,7 @@ package utils
 import (
 	"context"
 	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
@@ -33,7 +34,7 @@ func getFirstRunningPodWithLabels(ctx context.Context, labelsMap labels.Selector
 		podList *corev1.PodList
 		err     error
 	)
-	podList, err = getPodsByLabels(ctx, client, labelsMap, namespace)
+	podList, err = GetPodsByLabels(ctx, client, labelsMap, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func getFirstRunningPodWithLabels(ctx context.Context, labelsMap labels.Selector
 	return nil, fmt.Errorf("no running pods found")
 }
 
-func getPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Selector, namespace string) (*corev1.PodList, error) {
+func GetPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Selector, namespace string) (*corev1.PodList, error) {
 	podList := &corev1.PodList{}
 	err := c.List(ctx, &client.ListOptions{
 		Namespace:     namespace,

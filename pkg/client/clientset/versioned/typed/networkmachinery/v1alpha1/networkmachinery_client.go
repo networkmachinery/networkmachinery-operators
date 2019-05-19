@@ -31,6 +31,7 @@ type NetworkmachineryV1alpha1Interface interface {
 	NetworkConnectivityTestsGetter
 	NetworkMonitorsGetter
 	NetworkNotificationsGetter
+	NetworkTrafficShapersGetter
 }
 
 // NetworkmachineryV1alpha1Client is used to interact with features provided by the networkmachinery.io group.
@@ -48,6 +49,10 @@ func (c *NetworkmachineryV1alpha1Client) NetworkMonitors() NetworkMonitorInterfa
 
 func (c *NetworkmachineryV1alpha1Client) NetworkNotifications() NetworkNotificationInterface {
 	return newNetworkNotifications(c)
+}
+
+func (c *NetworkmachineryV1alpha1Client) NetworkTrafficShapers() NetworkTrafficShaperInterface {
+	return newNetworkTrafficShapers(c)
 }
 
 // NewForConfig creates a new NetworkmachineryV1alpha1Client for the given config.

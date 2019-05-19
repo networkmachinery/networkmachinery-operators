@@ -56,6 +56,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&NetworkNotificationList{},
 		&NetworkConnectivityTest{},
 		&NetworkConnectivityTestList{},
+		&NetworkTrafficShaper{},
+		&NetworkTrafficShaperList{},
 		&PingStatus{},
 		&NetcatStatus{},
 	)

@@ -17,11 +17,12 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"strings"
+
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
-	"net/http"
-	"strings"
 
 	"context"
 )
@@ -44,17 +45,16 @@ type podExecutor struct {
 
 type ExecOptions struct {
 	Namespace string
-	Name string
+	Name      string
 	Container string
-	Command string
+	Command   string
 
 	StandardCmdOpts
 }
 
 type StandardCmdOpts struct {
-	StdOut, StdErr  *bytes.Buffer
+	StdOut, StdErr *bytes.Buffer
 }
-
 
 // Execute executes a command on a pod
 func (p *podExecutor) Execute(ctx context.Context, options ExecOptions) error {
@@ -82,7 +82,7 @@ func (p *podExecutor) Execute(ctx context.Context, options ExecOptions) error {
 		return fmt.Errorf("failed to initialized the command exector: %v", err)
 	}
 
-	return  executor.Stream(remotecommand.StreamOptions{
+	return executor.Stream(remotecommand.StreamOptions{
 		Stdin:  strings.NewReader(options.Command),
 		Stdout: options.StdOut,
 		Stderr: options.StdErr,

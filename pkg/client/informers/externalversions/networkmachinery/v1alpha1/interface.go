@@ -32,6 +32,8 @@ type Interface interface {
 	NetworkMonitors() NetworkMonitorInformer
 	// NetworkNotifications returns a NetworkNotificationInformer.
 	NetworkNotifications() NetworkNotificationInformer
+	// NetworkTrafficShapers returns a NetworkTrafficShaperInformer.
+	NetworkTrafficShapers() NetworkTrafficShaperInformer
 }
 
 type version struct {
@@ -58,4 +60,9 @@ func (v *version) NetworkMonitors() NetworkMonitorInformer {
 // NetworkNotifications returns a NetworkNotificationInformer.
 func (v *version) NetworkNotifications() NetworkNotificationInformer {
 	return &networkNotificationInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// NetworkTrafficShapers returns a NetworkTrafficShaperInformer.
+func (v *version) NetworkTrafficShapers() NetworkTrafficShaperInformer {
+	return &networkTrafficShaperInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

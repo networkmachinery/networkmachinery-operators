@@ -17,6 +17,8 @@ rules:
       - networkmonitors
       - networknotification
       - networknotifications
+      - networktrafficshaper
+      - networktrafficshapers
       - networkconnectivitytest/status
       - networkconnectivitytests/status
     verbs:
@@ -48,6 +50,9 @@ rules:
       - configmaps
     resourceNames:
       - networkconnectivity-test-controller-leader-election
+      - sflow-controller-leader-election
+      - network-control-controller-leader-election
+      - network-traffic-shaper-leader-election
     verbs:
       - get
       - watch

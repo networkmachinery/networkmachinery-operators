@@ -42,6 +42,10 @@ func (c *FakeNetworkmachineryV1alpha1) NetworkNotifications() v1alpha1.NetworkNo
 	return &FakeNetworkNotifications{c}
 }
 
+func (c *FakeNetworkmachineryV1alpha1) NetworkTrafficShapers() v1alpha1.NetworkTrafficShaperInterface {
+	return &FakeNetworkTrafficShapers{c}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeNetworkmachineryV1alpha1) RESTClient() rest.Interface {

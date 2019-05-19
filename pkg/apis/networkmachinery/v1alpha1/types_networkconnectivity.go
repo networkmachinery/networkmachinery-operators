@@ -49,9 +49,10 @@ type NetworkSourceEndpoint struct {
 type EndpointKind string
 
 const (
-	IP      EndpointKind = "ip"
-	Pod     EndpointKind = "pod"
-	Service EndpointKind = "service"
+	IP       EndpointKind = "ip"
+	Pod      EndpointKind = "pod"
+	Service  EndpointKind = "service"
+	Selector EndpointKind = "selector"
 )
 
 type NetworkDestinationEndpoint struct {
