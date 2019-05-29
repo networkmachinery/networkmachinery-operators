@@ -2,10 +2,11 @@ package app
 
 import (
 	"context"
+	"os"
+
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	networkconnectivitywebhook "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/webhook"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
@@ -26,11 +27,12 @@ import (
 
 var log = logf.Log.WithName("example-controller")
 
-const(
-	validatingServerName = "networkconnectivity-layer-validator"
-	validationServerWebhookSecret = "networkconnectivity-layer-validator-secret"
+const (
+	validatingServerName           = "networkconnectivity-layer-validator"
+	validationServerWebhookSecret  = "networkconnectivity-layer-validator-secret"
 	validationServerWebhookService = "networkconnectivity-layer-validator-service"
 )
+
 func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 	entryLog := log.WithName("networkconnectivity-test-cmd")
 
@@ -58,7 +60,6 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 				utils.LogErrAndExit(err, "Could not update	 manager scheme")
 			}
 
-
 			validatingWebhook, err := builder.NewWebhookBuilder().
 				Name("validating.k8s.io").
 				Validating().
@@ -84,11 +85,11 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 					},
 
 					Service: &webhook.Service{
-						Namespace:  metav1.NamespaceDefault,
+						Namespace: metav1.NamespaceDefault,
 						Name:      validationServerWebhookService,
 						// Selectors should select the pods that runs this webhook server.
 						Selectors: map[string]string{
-							"app.kubernetes.io/name":controller.Name,
+							"app.kubernetes.io/name": controller.Name,
 						},
 					},
 				},
@@ -114,7 +115,6 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 			}
 		},
 	}
-
 	networkConnectivityTestCmdOpts.AddAllFlags(cmd.Flags())
 	return cmd
 }

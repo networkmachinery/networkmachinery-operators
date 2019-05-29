@@ -1,10 +1,22 @@
 # Networkmachinery-operators
 
-NetworkMachinery is currently a PoC  meant for providing a catalog of network troubleshooting operators ( currently in-tree). Examples of network operators can be found in the image below:
+NetworkMachinery is currently a PoC  meant for providing a catalog of network troubleshooting operators ( currently in-tree).
+ 
+Below are some of Network machinery Operators and CRDs that are either implemented or planned to be implemented:
 
-![NetworkMachinery](docs/imgs/2019-05-19-20-44-05.png)
-
-Only the ones highlighted are the ones implemented at the moment.
+- [x] Network Connectivity Operator, with CRDs, 
+    - NetworkConnectivityTest
+- [x] Network Traffic Shaper, with CRDs:
+    - NetworkTrafficShaper 
+- [x] Network Monitoring, with CRDs:
+    - NetworkMonitor 
+    - NetworkNotification
+- [ ] Network Controller, with CRDs: 
+    - NetworkControl 
+- [ ] Network Module Validator
+- [ ] CNIBenchmark
+- [ ] CNIPerformance
+- [ ] Network Scalability Tester (IPVS and IPTables)
 
 ## How to use
 
@@ -28,4 +40,5 @@ kubernetes
   make start-network-monitor
   make start-networkconnectivity-test
   make start-network-control-controller
+  make start-network-traffic-shaper
 ```
