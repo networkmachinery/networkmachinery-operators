@@ -17,7 +17,7 @@ func newReconciler(mgr manager.Manager) *ReconcileNetworkTrafficShaper {
 		logger:   log.Log.WithName(Name),
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
-		recorder: mgr.GetRecorder(Name)}
+		recorder: mgr.GetEventRecorderFor(Name)}
 }
 
 // DefaultPredicates returns the default predicates for an infrastructure reconciler.

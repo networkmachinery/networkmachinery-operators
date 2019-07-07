@@ -2,22 +2,17 @@ package app
 
 import (
 	"context"
-	"os"
 
-	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
-	networkconnectivitywebhook "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/webhook"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	networkmachineryhandlers "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/webhook"
+
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers"
-	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
-	apitypes "k8s.io/apimachinery/pkg/types"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/controller"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/builder"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/install"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
@@ -28,16 +23,15 @@ import (
 var log = logf.Log.WithName("example-controller")
 
 const (
-	validatingServerName           = "networkconnectivity-layer-validator"
-	validationServerWebhookSecret  = "networkconnectivity-layer-validator-secret"
-	validationServerWebhookService = "networkconnectivity-layer-validator-service"
+	layerValidationServerPath       = "/validate-layer-v1alpha1-networkconnectivitytest"
+	destinationValidationServerPath = "/validate-destination-v1alpha1-networkconnectivitytest"
 )
 
 func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 	entryLog := log.WithName("networkconnectivity-test-cmd")
 
 	networkConnectivityTestCmdOpts := NetworkConnectivityTestCmdOpts{
-		ConfigFlags: genericclioptions.NewConfigFlags(),
+		ConfigFlags: genericclioptions.NewConfigFlags(true),
 		LeaderElectionOptions: controllers.LeaderElectionOptions{
 			LeaderElection:          true,
 			LeaderElectionNamespace: "default",
@@ -60,51 +54,12 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 				utils.LogErrAndExit(err, "Could not update	 manager scheme")
 			}
 
-			validatingWebhook, err := builder.NewWebhookBuilder().
-				Name("validating.k8s.io").
-				Validating().
-				Operations(admissionregistrationv1beta1.Create, admissionregistrationv1beta1.Update).
-				WithManager(mgr).
-				ForType(&v1alpha1.NetworkConnectivityTest{}).
-				Handlers(&networkconnectivitywebhook.LayerValidator{}, &networkconnectivitywebhook.DestinationValidator{}).
-				Build()
-			if err != nil {
-				entryLog.Error(err, "unable to setup validating webhook")
-				os.Exit(1)
-			}
-
 			entryLog.Info("setting up webhook server")
-			admissionServer, err := webhook.NewServer(validatingServerName, mgr, webhook.ServerOptions{
-				Port:                          9876,
-				CertDir:                       "/tmp/cert",
-				DisableWebhookConfigInstaller: &networkConnectivityTestCmdOpts.disableWebhookConfigInstaller,
-				BootstrapOptions: &webhook.BootstrapOptions{
-					Secret: &apitypes.NamespacedName{
-						Namespace: metav1.NamespaceDefault,
-						Name:      validationServerWebhookSecret,
-					},
-
-					Service: &webhook.Service{
-						Namespace: metav1.NamespaceDefault,
-						Name:      validationServerWebhookService,
-						// Selectors should select the pods that runs this webhook server.
-						Selectors: map[string]string{
-							"app.kubernetes.io/name": controller.Name,
-						},
-					},
-				},
-			})
-			if err != nil {
-				entryLog.Error(err, "unable to create a new webhook server")
-				os.Exit(1)
-			}
+			admissionServer := mgr.GetWebhookServer()
 
 			entryLog.Info("registering webhooks to the webhook server")
-			err = admissionServer.Register(validatingWebhook)
-			if err != nil {
-				entryLog.Error(err, "unable to register webhooks in the admission server")
-				os.Exit(1)
-			}
+			admissionServer.Register(layerValidationServerPath, &webhook.Admission{Handler: &networkmachineryhandlers.LayerValidator{}})
+			admissionServer.Register(destinationValidationServerPath, &webhook.Admission{Handler: &networkmachineryhandlers.DestinationValidator{}})
 
 			if err := controllers.AddToManager(mgr); err != nil {
 				utils.LogErrAndExit(err, "Could not add controller to manager")

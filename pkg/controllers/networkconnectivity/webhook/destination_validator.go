@@ -18,27 +18,21 @@ package webhook
 
 import (
 	"context"
-	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	"net/http"
 
+	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission/types"
 )
+
+// +kubebuilder:webhook:path=/validate-destination-v1alpha1-networkconnectivitytest,mutating=false,failurePolicy=fail,groups="networkmachinery.io",resources=networkconnectivitytests,verbs=create;update,versions=v1alpha1,name=networkconnectivitytest.networkmachinery.io
 
 // DestinationValidator validates the destination
 type DestinationValidator struct {
 	client  client.Client
-	decoder types.Decoder
+	decoder *admission.Decoder
 }
-
-// Implement admission.Handler so the controller can handle admission request.
-var _ admission.Handler = &DestinationValidator{}
-
-// LayerValidator implements inject.Client.
-// A client will be automatically injected.
-var _ inject.Client = &DestinationValidator{}
 
 // InjectClient injects the client.
 func (v *DestinationValidator) InjectClient(c client.Client) error {
@@ -46,28 +40,24 @@ func (v *DestinationValidator) InjectClient(c client.Client) error {
 	return nil
 }
 
-// LayerValidator implements inject.Decoder.
-// A decoder will be automatically injected.
-var _ inject.Decoder = &DestinationValidator{}
-
 // InjectDecoder injects the decoder.
-func (v *DestinationValidator) InjectDecoder(d types.Decoder) error {
+func (v *DestinationValidator) InjectDecoder(d *admission.Decoder) error {
 	v.decoder = d
 	return nil
 }
 
-// LayerValidator makes sure that endpoint specs conform with the layer number set (e.g., a layer 3 endpoint can not have a port set)
-func (v *DestinationValidator) Handle(ctx context.Context, req types.Request) types.Response {
+// DestinationValidator makes sure that endpoint specs conform with the layer number set (e.g., a layer 3 endpoint can not have a port set)
+func (v *DestinationValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	networkConnectivityTest := &v1alpha1.NetworkConnectivityTest{}
 
 	err := v.decoder.Decode(req, networkConnectivityTest)
 	if err != nil {
-		return admission.ErrorResponse(http.StatusBadRequest, err)
+		return admission.Errored(http.StatusBadRequest, err)
 	}
 
 	allowed, reason, err := v.validateDestinationsFn(ctx, networkConnectivityTest)
 	if err != nil {
-		return admission.ErrorResponse(http.StatusInternalServerError, err)
+		return admission.Errored(http.StatusInternalServerError, err)
 	}
 	return admission.ValidationResponse(allowed, reason)
 }

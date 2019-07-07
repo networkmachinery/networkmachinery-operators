@@ -17,7 +17,7 @@ func newReconciler(mgr manager.Manager) *ReconcileNetworkConnectivityTest {
 		logger:   log.Log.WithName("networkconnectivity-test-controller"),
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
-		recorder: mgr.GetRecorder(Name)}
+		recorder: mgr.GetEventRecorderFor(Name)}
 }
 
 // DefaultPredicates returns the default predicates for an infrastructure reconciler.
@@ -42,5 +42,3 @@ func add(mgr manager.Manager, r reconcile.Reconciler, predicates []predicate.Pre
 
 	return nil
 }
-
-

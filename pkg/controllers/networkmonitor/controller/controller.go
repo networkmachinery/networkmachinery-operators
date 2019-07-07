@@ -17,7 +17,7 @@ func newReconciler(mgr manager.Manager) *ReconcileNetworkMonitor {
 		logger:   log.Log.WithName("networkmonitor-controller"),
 		client:   mgr.GetClient(),
 		scheme:   mgr.GetScheme(),
-		recorder: mgr.GetRecorder(Name)}
+		recorder: mgr.GetEventRecorderFor(Name)}
 }
 
 // DefaultPredicates returns the default predicates for an infrastructure reconciler.

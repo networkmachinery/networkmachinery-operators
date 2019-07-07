@@ -5,6 +5,7 @@ import (
 
 	networkconnectivitycmd "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/cmd/app"
 	networkcontrolcmd "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkcontrol/cmd/app"
+	networktrafficshapercmd "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networktrafficshaper/cmd/app"
 
 	networkmonitorcmd "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkmonitor/cmd/app"
 	versioncmd "github.com/networkmachinery/networkmachinery-operators/version/cmd"
@@ -22,6 +23,7 @@ func NewHyperCommand(ctx context.Context) *cobra.Command {
 		networkmonitorcmd.NewNetworkMonitorCmd(ctx),
 		networkcontrolcmd.NewNetworkContrlCmd(ctx),
 		networkconnectivitycmd.NewNetworkConnectivityTestCmd(ctx),
+		networktrafficshapercmd.NewNetworkTrafficShaperCmd(ctx),
 	)
 
 	return cmd

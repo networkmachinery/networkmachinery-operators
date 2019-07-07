@@ -1,3 +1,3 @@
 package controller
 
-const Name = "network-traffic-shaper"
+const Name = "network-trafficshaper-controller"

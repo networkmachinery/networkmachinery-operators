@@ -17,7 +17,7 @@ import (
 
 func NewNetworkContrlCmd(ctx context.Context) *cobra.Command {
 	networkMonitorCmdOpts := NetworkControlCmdOptions{
-		ConfigFlags: genericclioptions.NewConfigFlags(),
+		ConfigFlags: genericclioptions.NewConfigFlags(true),
 		LeaderElectionOptions: controllers.LeaderElectionOptions{
 			LeaderElection:          true,
 			LeaderElectionNamespace: "default",

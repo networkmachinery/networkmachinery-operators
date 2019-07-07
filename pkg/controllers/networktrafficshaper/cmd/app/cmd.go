@@ -7,7 +7,7 @@ import (
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers"
 
-	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkmonitor/controller"
+	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networktrafficshaper/controller"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/install"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
@@ -16,8 +16,8 @@ import (
 )
 
 func NewNetworkTrafficShaperCmd(ctx context.Context) *cobra.Command {
-	networkMonitorCmdOpts := NetworkMonitorCmdOptions{
-		ConfigFlags: genericclioptions.NewConfigFlags(),
+	networkMonitorCmdOpts := NetworkTrafficShaperCmdOptions{
+		ConfigFlags: genericclioptions.NewConfigFlags(true),
 		LeaderElectionOptions: controllers.LeaderElectionOptions{
 			LeaderElection:          true,
 			LeaderElectionNamespace: "default",
@@ -29,7 +29,7 @@ func NewNetworkTrafficShaperCmd(ctx context.Context) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use: "networkmonitor-controller",
+		Use: "network-trafficshaper-controller",
 		Run: func(cmd *cobra.Command, args []string) {
 			mgrOptions := &manager.Options{}
 			mgr, err := manager.New(networkMonitorCmdOpts.InitConfig(), *networkMonitorCmdOpts.ApplyLeaderElection(mgrOptions))

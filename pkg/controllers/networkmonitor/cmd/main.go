@@ -1,18 +1,17 @@
 package main
 
 import (
-	"github.com/gardener/gardener-extensions/pkg/controller"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkmonitor/cmd/app"
+	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
 
-	controllercmd "github.com/gardener/gardener-extensions/pkg/controller/cmd"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 func main() {
 	log.SetLogger(log.ZapLogger(false))
-	cmd := app.NewNetworkMonitorCmd(controller.SetupSignalHandlerContext())
+	cmd := app.NewNetworkMonitorCmd(utils.SetupSignalHandlerContext())
 
 	if err := cmd.Execute(); err != nil {
-		controllercmd.LogErrAndExit(err, "error executing the main controller command")
+		utils.LogErrAndExit(err, "error executing the main controller command")
 	}
 }

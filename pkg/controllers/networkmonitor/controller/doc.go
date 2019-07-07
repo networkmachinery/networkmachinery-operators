@@ -1,3 +1,3 @@
 package controller
 
-const Name = "sflow-controller"
+const Name = "network-monitor-controller"

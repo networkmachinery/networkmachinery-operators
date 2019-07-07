@@ -97,10 +97,10 @@ start-network-monitor:
 start-network-control-controller:
 	@go run cmd/networkmachinery-hyper/main.go network-control-controller
 
-.PHONY: start-networkconnectivity-test
-start-networkconnectivity-test:
+.PHONY: start-network-connectivity-test-controller
+start-network-connectivity-test-controller:
 	@go run cmd/networkmachinery-hyper/main.go networkconnectivity-test-controller
 
-.PHONY: start-network-trafficshaper
-start-networkconnectivity-test:
-	@go run cmd/networkmachinery-hyper/main.go networkconnectivity-test-controller
+.PHONY: start-network-trafficshaper-controller
+start-network-trafficshaper-controller:
+	@go run cmd/networkmachinery-hyper/main.go network-trafficshaper-controller

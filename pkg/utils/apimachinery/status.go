@@ -16,13 +16,15 @@ package apimachinery
 
 import (
 	"context"
+	"reflect"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"reflect"
+
+	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 // TryUpdateStatus tries to apply the given transformation function onto the given object, and to update its
@@ -31,7 +33,7 @@ func TryUpdateStatus(ctx context.Context, backoff wait.Backoff, c client.Client,
 	return tryUpdate(ctx, backoff, c, obj, c.Status().Update, transform)
 }
 
-func tryUpdate(ctx context.Context, backoff wait.Backoff, c client.Client, obj runtime.Object, updateFunc func(context.Context, runtime.Object) error, transform func() error) error {
+func tryUpdate(ctx context.Context, backoff wait.Backoff, c client.Client, obj runtime.Object, updateFunc func(context.Context, runtime.Object, ...client.UpdateOptionFunc) error, transform func() error) error {
 	key, err := client.ObjectKeyFromObject(obj)
 	if err != nil {
 		return err
@@ -59,7 +61,6 @@ func tryUpdate(ctx context.Context, backoff wait.Backoff, c client.Client, obj r
 		return true, nil
 	})
 }
-
 
 func exponentialBackoff(ctx context.Context, backoff wait.Backoff, condition wait.ConditionFunc) error {
 	duration := backoff.Duration
