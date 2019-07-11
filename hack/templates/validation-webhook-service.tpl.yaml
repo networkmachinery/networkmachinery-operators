@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  network-validator
+  namespace: default
+spec:
+  selector:
+    app.kubernetes.io/name: networkconnectivity-test-controller
+  ports:
+    - port: 443
+      targetPort: webhook-server  # name of port 8443 of the container

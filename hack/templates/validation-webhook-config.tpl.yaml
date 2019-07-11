@@ -1,0 +1,29 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: networkconnnectivity-test
+webhooks:
+  - name: network-validator.default.svc
+    clientConfig:
+      service:
+        name:  network-validator
+        namespace: default
+        path: "/validate-layer-v1alpha1-networkconnectivitytest"
+      caBundle: ${CA_BUNDLE}
+    rules:
+      - operations: [ "CREATE", "UPDATE"]
+        apiGroups: ["networkmachinery.io"]
+        apiVersions: ["v1alpha1"]
+        resources: ["networkconnectivitytests"]
+  - name: network-validator.default.svc
+    clientConfig:
+      service:
+        name:  network-validator
+        namespace: default
+        path: "/validate-destination-v1alpha1-networkconnectivitytest"
+      caBundle: ${CA_BUNDLE}
+    rules:
+      - operations: [ "CREATE", "UPDATE"]
+        apiGroups: ["networkmachinery.io"]
+        apiVersions: ["v1alpha1"]
+        resources: ["networkconnectivitytests"]

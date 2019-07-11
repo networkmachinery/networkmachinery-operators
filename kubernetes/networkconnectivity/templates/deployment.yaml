@@ -32,7 +32,7 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: cert
-              mountPath: /tmp/cert
+              mountPath: /tmp/k8s-webhook-server/serving-certs #default path
       volumes:
         - name: cert
           secret:

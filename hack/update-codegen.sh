@@ -22,6 +22,6 @@ ${TMP_DIR}/generate-groups.sh \
   all \
   github.com/networkmachinery/networkmachinery-operators/pkg/client github.com/networkmachinery/networkmachinery-operators/pkg/apis \
   networkmachinery:v1alpha1 \
-  --go-header-file hack/boilerplate.go.tmpl \
+  --go-header-file hack/templates/boilerplate.go.tmpl \
   $@
 

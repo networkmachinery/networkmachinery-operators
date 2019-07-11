@@ -89,6 +89,14 @@ lint:
 test:
 	go test ./...
 
+.PHONY: webhook
+webhook:
+	@./hack/kubectl-hook.sh
+
+.PHONY: install-crds
+install-crds:
+	@./hack/install-crds.sh
+
 .PHONY: start-network-monitor
 start-network-monitor:
 	@go run cmd/networkmachinery-hyper/main.go networkmonitor-controller

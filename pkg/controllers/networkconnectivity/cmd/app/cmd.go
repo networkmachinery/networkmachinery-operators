@@ -3,9 +3,9 @@ package app
 import (
 	"context"
 
-	networkmachineryhandlers "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/webhook"
-
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	networkmachineryhandlers "github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/webhook"
 
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
@@ -25,6 +25,8 @@ var log = logf.Log.WithName("example-controller")
 const (
 	layerValidationServerPath       = "/validate-layer-v1alpha1-networkconnectivitytest"
 	destinationValidationServerPath = "/validate-destination-v1alpha1-networkconnectivitytest"
+
+	webhookServerPort = 9876
 )
 
 func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
@@ -45,7 +47,9 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "networkconnectivity-test-controller",
 		Run: func(cmd *cobra.Command, args []string) {
-			mgrOptions := &manager.Options{}
+			mgrOptions := &manager.Options{
+				Port: webhookServerPort,
+			}
 			mgr, err := manager.New(networkConnectivityTestCmdOpts.InitConfig(), *networkConnectivityTestCmdOpts.ApplyLeaderElection(mgrOptions))
 			if err != nil {
 				utils.LogErrAndExit(err, "Could not instantiate manager")

@@ -6,7 +6,7 @@ metadata:
 spec:
   layer: "4"
   source:
-    name: "kube-apiserver-kind-kubecon2019-control-plane"
+    name: "kube-apiserver-kind-control-plane"
     namespace: "kube-system"
     container: ""
   destinations:
