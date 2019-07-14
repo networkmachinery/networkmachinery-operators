@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/executor"
+
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
 	"k8s.io/client-go/rest"
 )
@@ -20,12 +22,12 @@ func undoShape(ctx context.Context, config *rest.Config, namespace, name, device
 
 func shape(ctx context.Context, config *rest.Config, namespace, name, command string) error {
 	var stdOut, stdErr bytes.Buffer
-	execOpts := utils.ExecOptions{
+	execOpts := executor.PodExecOptions{
 		Namespace: namespace,
 		Name:      name,
 		Command:   command,
 		Container: "", //TODO Fixme, get the right container value
-		StandardCmdOpts: utils.StandardCmdOpts{
+		StandardCmdOpts: executor.StandardCmdOpts{
 			StdErr: &stdErr,
 			StdOut: &stdOut,
 		},

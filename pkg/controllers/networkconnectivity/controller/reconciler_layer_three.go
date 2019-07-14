@@ -53,8 +53,7 @@ func (r *ReconcileNetworkConnectivityTest) IPPing(ctx context.Context, status *v
 
 func (r *ReconcileNetworkConnectivityTest) PodPing(ctx context.Context, status *v1alpha1.PingStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) error {
 	destinationPod := &corev1.Pod{}
-	err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name}, destinationPod)
-	if err != nil {
+	if err := r.client.Get(ctx, client.ObjectKey{Namespace: destination.Namespace, Name: destination.Name}, destinationPod); err != nil {
 		status.PingPodEndpoints = append(status.PingPodEndpoints, v1alpha1.PingPodEndpoint{
 			PodParams: v1alpha1.Params{
 				Namespace: destination.Namespace,
@@ -157,6 +156,7 @@ func (r *ReconcileNetworkConnectivityTest) reconcileLayerThree(ctx context.Conte
 			TypeMeta: PingStatusTypeMeta,
 		}
 	)
+
 	for _, destination := range networkConnectivityTest.Spec.Destinations {
 		switch destination.Kind {
 		case v1alpha1.IP:

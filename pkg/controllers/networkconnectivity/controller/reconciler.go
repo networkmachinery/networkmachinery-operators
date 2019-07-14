@@ -7,6 +7,7 @@ import (
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/rest"
@@ -71,6 +72,19 @@ func (r *ReconcileNetworkConnectivityTest) reconcile(ctx context.Context, networ
 	if err := apimachinery.EnsureFinalizer(ctx, r.client, FinalizerName, networkConnectivityTest); err != nil {
 		return apimachinery.ReconcileErr(err)
 	}
+
+	err := apimachinery.Can(ctx, r.client, &authorizationv1.ResourceAttributes{
+		Namespace:   networkConnectivityTest.Spec.Source.Namespace,
+		Verb:        "create",
+		Resource:    "pods",
+		Subresource: "exec",
+		Group:       "",
+		Name:        "",
+	})
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
 	switch networkConnectivityTest.Spec.Layer {
 	case "3":
 		return r.reconcileLayerThree(ctx, networkConnectivityTest)
@@ -103,5 +117,7 @@ func (r *ReconcileNetworkConnectivityTest) delete(ctx context.Context, networkCo
 		return apimachinery.ReconcileErr(err)
 	}
 
+	r.logger.Info("Deletion successful ", LogKey, networkConnectivityTest.Name)
+	r.recorder.Event(networkConnectivityTest, v1alpha1.EventTypeNormal, v1alpha1.EventTypeDeletion, "Network Connectivity Test Deleted!")
 	return reconcile.Result{}, nil
 }

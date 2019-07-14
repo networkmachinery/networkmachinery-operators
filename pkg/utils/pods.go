@@ -18,14 +18,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/executor"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func PodExec(ctx context.Context, config *rest.Config, options ExecOptions) error {
-	return NewPodExecutor(config).Execute(ctx, options)
+func PodExec(ctx context.Context, config *rest.Config, options executor.PodExecOptions) error {
+	return executor.NewPodExecutor(config).Execute(ctx, options)
+}
+
+func DebugExec(ctx context.Context, config *rest.Config, options executor.DebugExecOptions) error {
+	return executor.NewDebugExecutor(config).Execute(ctx, options)
 }
 
 // getFirstRunningPodWithLabels fetches the first running pod with the desired set of labels <labelsMap>
@@ -61,4 +67,36 @@ func GetPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Sele
 		return nil, err
 	}
 	return podList, nil
+}
+
+// IsPodReady returns true if a pod is ready; false otherwise.
+func IsPodReady(pod *corev1.Pod) bool {
+	return IsPodReadyConditionTrue(pod.Status)
+}
+
+// IsPodReadyConditionTrue returns true if a pod is ready; false otherwise.
+func IsPodReadyConditionTrue(status corev1.PodStatus) bool {
+	condition := GetPodReadyCondition(status)
+	return condition != nil && condition.Status == corev1.ConditionTrue
+}
+
+// GetPodReadyCondition extracts the pod ready condition from the given status and returns that.
+// Returns nil if the condition is not present.
+func GetPodReadyCondition(status corev1.PodStatus) *corev1.PodCondition {
+	_, condition := GetPodCondition(&status, corev1.PodReady)
+	return condition
+}
+
+// GetPodCondition extracts the provided condition from the given status and returns that.
+// Returns nil and -1 if the condition is not present, and the index of the located condition.
+func GetPodCondition(status *corev1.PodStatus, conditionType corev1.PodConditionType) (int, *corev1.PodCondition) {
+	if status == nil {
+		return -1, nil
+	}
+	for i := range status.Conditions {
+		if status.Conditions[i].Type == conditionType {
+			return i, &status.Conditions[i]
+		}
+	}
+	return -1, nil
 }

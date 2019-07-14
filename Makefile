@@ -9,27 +9,6 @@ IMAGE_NAME := "zanetworker/networkmachinery-hyper"
 .PHONY: default
 default: test
 
-.PHONY: help
-help:
-	@echo 'Management commands for networkmachinery-operators:'
-	@echo
-	@echo 'Usage:'
-	@echo '    make start-network-monitor          						Starts the network monitor controller.'
-	@echo '    make start-network-control-controller          			Starts the network control controller.'
-	@echo '    make start-networkconnectivity-test          			Starts the network connectivity test controller.'
-	@echo '    make generate        Runs code-gen for the project APIs'
-	@echo '    make build           Compile the project.'
-	@echo '    make install         installs the networkmachinery-hyper binary'
-	@echo '    make vendor          runs go mod vendor, mostly used for ci.'
-	@echo '    make build-alpine    Compile optimized for alpine linux.'
-	@echo '    make package         Build final docker image with just the go binary inside'
-	@echo '    make tag             Tag image created by package with latest, git commit and version'
-	@echo '    make test            Run tests on a compiled project.'
-	@echo '    make push            Push tagged images to registry'
-	@echo '    make clean           Clean the directory tree.'
-	@echo
-
-
 .PHONY: generate
 generate:
 	./hack/update-codegen.sh
@@ -72,6 +51,9 @@ push: tag
 	docker push $(IMAGE_NAME):$(GIT_COMMIT)
 	docker push $(IMAGE_NAME):${VERSION}
 	docker push $(IMAGE_NAME):latest
+
+.PHONY: ship
+ship: package tag push
 
 .PHONY: clean
 clean:

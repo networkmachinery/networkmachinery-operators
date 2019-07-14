@@ -13,7 +13,7 @@ import (
 // NetworkMonitorCmdOptions necessary options to run the sFlowController
 // the current context on a user's KUBECONFIG
 type NetworkConnectivityTestCmdOpts struct {
-	 disableWebhookConfigInstaller bool
+	disableWebhookConfigInstaller bool
 
 	*genericclioptions.ConfigFlags
 	controllers.LeaderElectionOptions

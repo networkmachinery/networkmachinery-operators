@@ -7,17 +7,18 @@ import (
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
+	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/executor"
 	"k8s.io/client-go/rest"
 )
 
 func Ping(ctx context.Context, config *rest.Config, source v1alpha1.NetworkSourceEndpoint, host string) (*PingOutput, error) {
 	var stdOut, stdErr bytes.Buffer
-	execOpts := utils.ExecOptions{
+	execOpts := executor.PodExecOptions{
 		Namespace: source.Namespace,
 		Name:      source.Name,
 		Command:   fmt.Sprintf("ping -c3 %s", host),
 		Container: source.Container,
-		StandardCmdOpts: utils.StandardCmdOpts{
+		StandardCmdOpts: executor.StandardCmdOpts{
 			StdErr: &stdErr,
 			StdOut: &stdOut,
 		},
@@ -41,12 +42,12 @@ func Ping(ctx context.Context, config *rest.Config, source v1alpha1.NetworkSourc
 
 func NetCat(ctx context.Context, config *rest.Config, source v1alpha1.NetworkSourceEndpoint, host, port string) (*NetcatOutput, error) {
 	var stdOut, stdErr bytes.Buffer
-	execOpts := utils.ExecOptions{
+	execOpts := executor.PodExecOptions{
 		Namespace: source.Namespace,
 		Name:      source.Name,
 		Command:   fmt.Sprintf("nc -z -v %s %s 2>&1", host, port),
 		Container: source.Container,
-		StandardCmdOpts: utils.StandardCmdOpts{
+		StandardCmdOpts: executor.StandardCmdOpts{
 			StdErr: &stdErr,
 			StdOut: &stdOut,
 		},
