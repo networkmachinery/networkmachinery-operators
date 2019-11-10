@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
@@ -30,19 +31,19 @@ const (
 )
 
 func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
-	entryLog := log.WithName("networkconnectivity-test-cmd")
-
-	networkConnectivityTestCmdOpts := NetworkConnectivityTestCmdOpts{
-		ConfigFlags: genericclioptions.NewConfigFlags(true),
-		LeaderElectionOptions: controllers.LeaderElectionOptions{
-			LeaderElection:          true,
-			LeaderElectionNamespace: "default",
-			LeaderElectionID:        utils.LeaderElectionNameID(controller.Name),
-		},
-		ControllerOptions: controllers.ControllerOptions{
-			MaxConcurrentReconciles: 5,
-		},
-	}
+	var (
+		entryLog                       = log.WithName("networkconnectivity-test-cmd")
+		retryDuration                  = 100 * time.Millisecond
+		networkConnectivityTestCmdOpts = NetworkConnectivityTestCmdOpts{
+			ConfigFlags: genericclioptions.NewConfigFlags(true),
+			LeaderElectionOptions: controllers.LeaderElectionOptions{
+				LeaderElection:          true,
+				LeaderElectionNamespace: "default",
+				LeaderElectionID:        utils.LeaderElectionNameID(controller.Name),
+			},
+			leaderLelectionRetryPeriod: &retryDuration,
+		}
+	)
 
 	cmd := &cobra.Command{
 		Use: "networkconnectivity-test-controller",
@@ -50,12 +51,13 @@ func NewNetworkConnectivityTestCmd(ctx context.Context) *cobra.Command {
 			mgrOptions := &manager.Options{
 				Port: webhookServerPort,
 			}
-			mgr, err := manager.New(networkConnectivityTestCmdOpts.InitConfig(), *networkConnectivityTestCmdOpts.ApplyLeaderElection(mgrOptions))
+			mgr, err := manager.New(networkConnectivityTestCmdOpts.InitConfig(),
+				*networkConnectivityTestCmdOpts.InjectRetryOptions(networkConnectivityTestCmdOpts.InjectLeaderElectionOpts(mgrOptions)))
 			if err != nil {
 				utils.LogErrAndExit(err, "Could not instantiate manager")
 			}
 			if err := install.AddToScheme(mgr.GetScheme()); err != nil {
-				utils.LogErrAndExit(err, "Could not update	 manager scheme")
+				utils.LogErrAndExit(err, "Could not update manager scheme")
 			}
 
 			entryLog.Info("setting up webhook server")

@@ -272,7 +272,7 @@ func (in *NetworkConnectivityTest) DeepCopyObject() runtime.Object {
 func (in *NetworkConnectivityTestList) DeepCopyInto(out *NetworkConnectivityTestList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]NetworkConnectivityTest, len(*in))
@@ -410,7 +410,7 @@ func (in *NetworkMonitor) DeepCopyObject() runtime.Object {
 func (in *NetworkMonitorList) DeepCopyInto(out *NetworkMonitorList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]NetworkMonitor, len(*in))
@@ -515,7 +515,7 @@ func (in *NetworkNotification) DeepCopyObject() runtime.Object {
 func (in *NetworkNotificationList) DeepCopyInto(out *NetworkNotificationList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]NetworkNotification, len(*in))
@@ -614,7 +614,7 @@ func (in *NetworkTrafficShaper) DeepCopyObject() runtime.Object {
 func (in *NetworkTrafficShaperList) DeepCopyInto(out *NetworkTrafficShaperList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]NetworkTrafficShaper, len(*in))

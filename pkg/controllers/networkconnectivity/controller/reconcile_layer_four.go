@@ -123,6 +123,7 @@ func (r *ReconcileNetworkConnectivityTest) reconcileLayerFour(ctx context.Contex
 		switch destination.Kind {
 		case v1alpha1.IP:
 			r.IPNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination)
+			r.logger.Info("checking connectivity against %s", destination)
 		case v1alpha1.Pod:
 			err := r.PodNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination)
 			if err != nil {

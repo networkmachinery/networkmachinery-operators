@@ -5,6 +5,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
+
+	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery"
+
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/executor"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
@@ -33,7 +37,27 @@ func shape(ctx context.Context, config *rest.Config, namespace, name, command st
 		},
 	}
 
+	useEphemeralContainers, err := utils.ShouldUseEphemeralContainers(config)
+	if err != nil {
+		return err
+	}
+
+	if useEphemeralContainers {
+		debugContainerName := "net-debug"
+		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, namespace, name, debugContainerName); err != nil {
+			return err
+		}
+		execOpts.Container = debugContainerName
+
+		if err := apimachinery.EphemeralContainerInStatus(ctx, config, &v1alpha1.NetworkSourceEndpoint{Namespace: namespace, Name: name}); err != nil {
+			return err
+		}
+	}
+
 	// TODO: handle error if tc config already Exists
-	_ = utils.PodExec(ctx, config, execOpts)
+	if err = utils.PodExec(ctx, config, execOpts); err != nil {
+		return err
+	}
+
 	return nil
 }

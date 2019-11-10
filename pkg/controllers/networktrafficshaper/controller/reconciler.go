@@ -88,7 +88,7 @@ func (r *ReconcileNetworkTrafficShaper) reconcile(ctx context.Context, networkTr
 	for _, target := range networkTrafficShaper.Spec.Targets {
 		switch target.Kind {
 		case v1alpha1.Selector:
-			podList, err := utils.GetPodsByLabels(ctx, r.client, labels.SelectorFromSet(labels.Set(target.SourceSelector.MatchLabels)), target.Namespace)
+			podList, err := utils.GetPodsByLabels(ctx, r.client, labels.SelectorFromSet(target.SourceSelector.MatchLabels), target.Namespace)
 			if err != nil {
 				return apimachinery.ReconcileErr(err)
 			}

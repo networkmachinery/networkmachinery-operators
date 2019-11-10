@@ -31,7 +31,7 @@ func Add(mgr manager.Manager) error {
 }
 
 func add(mgr manager.Manager, r reconcile.Reconciler, predicates []predicate.Predicate) error {
-	ctrl, err := controller.New(Name, mgr, controller.Options{Reconciler: r})
+	ctrl, err := controller.New(Name, mgr, controller.Options{Reconciler: r, MaxConcurrentReconciles: 5})
 	if err != nil {
 		return err
 	}

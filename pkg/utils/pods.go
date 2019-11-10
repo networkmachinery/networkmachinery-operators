@@ -59,10 +59,10 @@ func getFirstRunningPodWithLabels(ctx context.Context, labelsMap labels.Selector
 
 func GetPodsByLabels(ctx context.Context, c client.Client, labelsMap labels.Selector, namespace string) (*corev1.PodList, error) {
 	podList := &corev1.PodList{}
-	err := c.List(ctx, podList, ToListOptionFunc(&client.ListOptions{
+	err := c.List(ctx, podList, &client.ListOptions{
 		Namespace:     namespace,
-		LabelSelector: labelsMap,
-	}))
+		LabelSelector: labelsMap,	
+	})
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/controllers/networkconnectivity/controller"
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils"
@@ -14,18 +16,23 @@ import (
 // the current context on a user's KUBECONFIG
 type NetworkConnectivityTestCmdOpts struct {
 	disableWebhookConfigInstaller bool
-
+	leaderLelectionRetryPeriod    *time.Duration
 	*genericclioptions.ConfigFlags
 	controllers.LeaderElectionOptions
-	controllers.ControllerOptions
 }
 
-func (nct *NetworkConnectivityTestCmdOpts) ApplyLeaderElection(mgr *manager.Options) *manager.Options {
-	mgr.LeaderElectionID = nct.LeaderElectionID
-	mgr.LeaderElectionNamespace = nct.LeaderElectionNamespace
-	mgr.LeaderElection = nct.LeaderElection
-	return mgr
+func (nct *NetworkConnectivityTestCmdOpts) InjectLeaderElectionOpts(mgrOpts *manager.Options) *manager.Options {
+	mgrOpts.LeaderElectionID = nct.LeaderElectionID
+	mgrOpts.LeaderElectionNamespace = nct.LeaderElectionNamespace
+	mgrOpts.LeaderElection = nct.LeaderElection
+	return mgrOpts
 }
+
+func (nct *NetworkConnectivityTestCmdOpts) InjectRetryOptions(mgrOpts *manager.Options) *manager.Options {
+	mgrOpts.RetryPeriod = nct.leaderLelectionRetryPeriod
+	return mgrOpts
+}
+
 
 func (nct *NetworkConnectivityTestCmdOpts) InitConfig() *rest.Config {
 	config, err := nct.ToRESTConfig()
