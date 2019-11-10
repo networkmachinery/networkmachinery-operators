@@ -18,9 +18,9 @@ spec:
       log: "true"
   thresholds:
     - name: "ddos"
-      metric: "tcp-flow"
+      metric: "icmp-flow"
       value: 100
-      flowName: "tcp-flow"
+      flowName: "icmp-flow"
 #      byFlow: "true"
   eventsConfig:
     maxEvents: "5"

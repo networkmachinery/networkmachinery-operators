@@ -9,7 +9,7 @@ spec:
       namespace: default
       targetSelector:
         matchLabels:
-          app: demo-kubecon
+          app: demo-deploy
       configuration:
         type: delay
         device: eth0

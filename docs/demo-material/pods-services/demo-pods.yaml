@@ -9,9 +9,9 @@ spec:
       command:
         - sleep
         - 9999s
-      securityContext:
-        capabilities:
-          add: ["NET_ADMIN", "SYS_TIME"]
+#      securityContext:
+#        capabilities:
+#          add: ["NET_ADMIN", "SYS_TIME"]
 ---
 apiVersion: v1
 kind: Pod
@@ -22,8 +22,10 @@ spec:
     - name: priv-container
       image: nicolaka/netshoot
       command:
-        - sleep
-        - 9999s
-      securityContext:
-        capabilities:
-          add: ["NET_ADMIN", "SYS_TIME"]
+        - '/bin/sh'
+        - '-c'
+        - >
+          while true; do echo "hello world"; sleep 10s; done
+#      securityContext:
+#        capabilities:
+#          add: ["NET_ADMIN", "SYS_TIME"]

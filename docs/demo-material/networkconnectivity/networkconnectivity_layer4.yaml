@@ -6,11 +6,11 @@ metadata:
 spec:
   layer: "4"
   source:
-    name: "kube-apiserver-kind-control-plane"
-    namespace: "kube-system"
+    name: "demo-pod-1"
+    namespace: "default"
     container: ""
   destinations:
     - kind: service
       namespace: default
-      name: demo-kubecon
+      name: demo-service
       port: "8100"

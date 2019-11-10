@@ -4,20 +4,17 @@ kind: NetworkConnectivityTest
 metadata:
   name: smokeping
 spec:
-    layer: "3"
-    source:
-      name: "kube-apiserver-kind-control-plane"
-      namespace: "kube-system"
-      container: ""
-    destinations:
-      - kind: pod
-        name: demo-pod-1
-        namespace: default
-      - kind: pod
-        name: demo-pod-2
-        namespace: default
-      - kind: ip
-        ip: "8.8.8.8"
-      - kind: service
-        namespace: default
-        name: demo-kubecon
+  layer: "3"
+  source:
+    name: "demo-pod-1"
+    namespace: "default"
+    container: ""
+  destinations:
+    - kind: pod
+      name: demo-pod-2
+      namespace: default
+    - kind: ip
+      ip: "8.8.8.8"
+    - kind: service
+      namespace: default
+      name: demo-service

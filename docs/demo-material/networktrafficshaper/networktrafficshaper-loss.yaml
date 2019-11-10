@@ -7,7 +7,7 @@ spec:
   targets:
 #    - kind: pod
 #      namespace: default
-#      name: demo-kubecon-7dcb99b576-lrwvg
+#      name: demo-deploy-7dcb99b576-lrwvg
 #      configuration:
 #        type: loss
 #        device: eth0
@@ -16,7 +16,7 @@ spec:
       namespace: default
       targetSelector:
         matchLabels:
-          app: demo-kubecon
+          app: demo-deploy
       configuration:
         type: loss
         device: eth0
