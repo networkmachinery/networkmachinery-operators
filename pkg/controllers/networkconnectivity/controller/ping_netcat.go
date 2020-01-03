@@ -47,7 +47,6 @@ func Ping(ctx context.Context, config *rest.Config, source networkmachineryv1alp
 
 	err = utils.PodExec(ctx, config, execOpts)
 	if err != nil {
-		fmt.Println("err podExec: ", err.Error())
 		return &PingOutput{state: networkmachineryv1alpha1.FailedPing}, err
 	}
 

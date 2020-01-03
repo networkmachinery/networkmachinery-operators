@@ -38,6 +38,7 @@ func (r *ReconcileNetworkConnectivityTest) IPPing(ctx context.Context, status *v
 				State: v1alpha1.FailedPing,
 			},
 		})
+		r.logger.Error(err, "failed to ping endpoint", "destination", destination)
 	} else {
 		status.PingIPEndpoints = append(status.PingIPEndpoints, v1alpha1.PingIPEndpoint{
 			IP: destination,
@@ -110,25 +111,28 @@ func (r *ReconcileNetworkConnectivityTest) ServicePing(ctx context.Context, stat
 
 	var pingIPEndpoints []v1alpha1.PingIPEndpoint
 	// TODO: handle multiple subsets
-	for _, endpoint := range endpoints.Subsets[0].Addresses {
-		pingOut, err := Ping(ctx, r.config, *source, endpoint.IP)
-		if err != nil {
-			pingIPEndpoints = append(pingIPEndpoints, v1alpha1.PingIPEndpoint{
-				IP: endpoint.IP,
-				PingResult: v1alpha1.PingResult{
-					State: v1alpha1.FailedPing,
-				},
-			})
-		} else {
-			pingIPEndpoints = append(pingIPEndpoints, v1alpha1.PingIPEndpoint{
-				IP: endpoint.IP,
-				PingResult: v1alpha1.PingResult{
-					State:   v1alpha1.SuccessPing,
-					Average: pingOut.avg,
-					Max:     pingOut.max,
-					Min:     pingOut.min,
-				},
-			})
+
+	if endpoints != nil && endpoints.Subsets != nil {
+		for _, endpoint := range endpoints.Subsets[0].Addresses {
+			pingOut, err := Ping(ctx, r.config, *source, endpoint.IP)
+			if err != nil {
+				pingIPEndpoints = append(pingIPEndpoints, v1alpha1.PingIPEndpoint{
+					IP: endpoint.IP,
+					PingResult: v1alpha1.PingResult{
+						State: v1alpha1.FailedPing,
+					},
+				})
+			} else {
+				pingIPEndpoints = append(pingIPEndpoints, v1alpha1.PingIPEndpoint{
+					IP: endpoint.IP,
+					PingResult: v1alpha1.PingResult{
+						State:   v1alpha1.SuccessPing,
+						Average: pingOut.avg,
+						Max:     pingOut.max,
+						Min:     pingOut.min,
+					},
+				})
+			}
 		}
 	}
 

@@ -25,14 +25,20 @@ type NetcatOutput struct {
 }
 
 func (r *ReconcileNetworkConnectivityTest) IPNetcat(ctx context.Context, status *v1alpha1.NetcatStatus, source *v1alpha1.NetworkSourceEndpoint, destination *v1alpha1.NetworkDestinationEndpoint) error {
-	netcatOut, _ := NetCat(ctx, r.config, *source, destination.IP, destination.Port)
-	status.NetcatIPEndpoints = append(status.NetcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
-		IP:   destination.IP,
-		Port: destination.Port,
-		NetcatResult: v1alpha1.NetcatResult{
-			State: netcatOut.state,
-		},
-	})
+	netcatOut, err := NetCat(ctx, r.config, *source, destination.IP, destination.Port)
+	if err != nil {
+		return err
+	}
+
+	if netcatOut != nil {
+		status.NetcatIPEndpoints = append(status.NetcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
+			IP:   destination.IP,
+			Port: destination.Port,
+			NetcatResult: v1alpha1.NetcatResult{
+				State: netcatOut.state,
+			},
+		})
+	}
 	return nil
 }
 
@@ -48,7 +54,11 @@ func (r *ReconcileNetworkConnectivityTest) PodNetcat(ctx context.Context, status
 		return fmt.Errorf("could not find pod IP to netcat")
 	}
 
-	netcatOut, _ := NetCat(ctx, r.config, *source, podIP, destination.Port)
+	netcatOut, err := NetCat(ctx, r.config, *source, podIP, destination.Port)
+	if err != nil {
+		return err
+	}
+
 	status.NetcatPodEndpoints = append(status.NetcatPodEndpoints,
 		v1alpha1.NetcatPodEndpoint{
 			PodParams: v1alpha1.Params{
@@ -61,6 +71,7 @@ func (r *ReconcileNetworkConnectivityTest) PodNetcat(ctx context.Context, status
 				State: netcatOut.state,
 			},
 		})
+
 	return nil
 }
 
@@ -79,18 +90,20 @@ func (r *ReconcileNetworkConnectivityTest) ServiceNetcat(ctx context.Context, st
 		return err
 	}
 
-	// TODO: handle multiple subsets and separeate error from state
+	// TODO: handle multiple subsets / or endpoint slices and separate error from state
 	var netcatIPEndpoints []v1alpha1.NetcatIPEndpoint
 	for _, endpoint := range endpoints.Subsets[0].Addresses {
 		endPointPort := strconv.Itoa(int(endpoints.Subsets[0].Ports[0].Port))
 		netcatOut, _ := NetCat(ctx, r.config, *source, endpoint.IP, endPointPort)
-		netcatIPEndpoints = append(netcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
-			IP:   endpoint.IP,
-			Port: endPointPort,
-			NetcatResult: v1alpha1.NetcatResult{
-				State: netcatOut.state,
-			},
-		})
+		if netcatOut != nil {
+			netcatIPEndpoints = append(netcatIPEndpoints, v1alpha1.NetcatIPEndpoint{
+				IP:   endpoint.IP,
+				Port: endPointPort,
+				NetcatResult: v1alpha1.NetcatResult{
+					State: netcatOut.state,
+				},
+			})
+		}
 	}
 	// This goes directly to the service IP and port
 	directServiceNetCatOut, _ := NetCat(ctx, r.config, *source, service.Spec.ClusterIP, destination.Port)
@@ -122,26 +135,27 @@ func (r *ReconcileNetworkConnectivityTest) reconcileLayerFour(ctx context.Contex
 	for _, destination := range networkConnectivityTest.Spec.Destinations {
 		switch destination.Kind {
 		case v1alpha1.IP:
-			r.IPNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination)
 			r.logger.Info("checking connectivity against %s", destination)
-		case v1alpha1.Pod:
-			err := r.PodNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination)
-			if err != nil {
+			if err := r.IPNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination); err != nil {
 				return apimachinery.ReconcileErr(err)
 			}
+
+		case v1alpha1.Pod:
+			if err := r.PodNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination); err != nil {
+				return apimachinery.ReconcileErr(err)
+			}
+
 		case v1alpha1.Service:
-			err := r.ServiceNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination)
-			if err != nil {
+			if err := r.ServiceNetcat(ctx, status, &networkConnectivityTest.Spec.Source, &destination); err != nil {
 				return apimachinery.ReconcileErr(err)
 			}
 		}
 	}
 
-	err := apimachinery.TryUpdateStatus(ctx, retry.DefaultBackoff, r.client, networkConnectivityTest, func() error {
+	if err := apimachinery.TryUpdateStatus(ctx, retry.DefaultBackoff, r.client, networkConnectivityTest, func() error {
 		networkConnectivityTest.Status.TestStatus = &runtime.RawExtension{Object: status}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return apimachinery.ReconcileErr(err)
 	}
 
