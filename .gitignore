@@ -1,2 +1,4 @@
 .idea
 service-demo
+.vscode/
+bin/

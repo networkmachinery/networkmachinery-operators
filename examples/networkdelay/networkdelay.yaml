@@ -1,0 +1,16 @@
+---
+apiVersion: networkmachinery.io/v1alpha1
+kind: NetworkDelayTest
+metadata:
+  name: smokingdelay
+spec:
+    protocol: "tcp"
+    source:
+      name: "demo-pod-2"
+      namespace: "default"
+      container: "net-debug"
+    destinations:
+      - kind: pod
+        namespace: default
+        name: demo-pod-1
+

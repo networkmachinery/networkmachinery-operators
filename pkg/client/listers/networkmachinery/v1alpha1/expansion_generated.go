@@ -20,9 +20,17 @@ under the License.
 
 package v1alpha1
 
+// EndpointKindListerExpansion allows custom methods to be added to
+// EndpointKindLister.
+type EndpointKindListerExpansion interface{}
+
 // NetworkConnectivityTestListerExpansion allows custom methods to be added to
 // NetworkConnectivityTestLister.
 type NetworkConnectivityTestListerExpansion interface{}
+
+// NetworkDelayTestListerExpansion allows custom methods to be added to
+// NetworkDelayTestLister.
+type NetworkDelayTestListerExpansion interface{}
 
 // NetworkMonitorListerExpansion allows custom methods to be added to
 // NetworkMonitorLister.
