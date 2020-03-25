@@ -20,7 +20,11 @@ under the License.
 
 package v1alpha1
 
+type EndpointKindExpansion interface{}
+
 type NetworkConnectivityTestExpansion interface{}
+
+type NetworkDelayTestExpansion interface{}
 
 type NetworkMonitorExpansion interface{}
 

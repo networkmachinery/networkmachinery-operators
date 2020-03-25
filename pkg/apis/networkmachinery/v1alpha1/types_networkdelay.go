@@ -5,36 +5,43 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+type Protocol string
+
+const (
+	TCP Protocol = "tcp_lat"
+	UDP Protocol = "udp_lat"
+)
+
 // +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// NetworkConnectivityTest represents a network connectivity test
-type NetworkConnectivityTest struct {
+// NetworkDelayTest represents a network connectivity test
+type NetworkDelayTest struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   NetworkConnectivityTestSpec   `json:"spec,omitempty"`
-	Status NetworkConnectivityTestStatus `json:"status,omitempty"`
+	Spec   NetworkDelayTestSpec   `json:"spec,omitempty"`
+	Status NetworkDelayTestStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// NetworkConnectivityTestList is a list of network notifications
-type NetworkConnectivityTestList struct {
+// NetworkDelayTestList is a list of network notifications
+type NetworkDelayTestList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []NetworkConnectivityTest `json:"items,omitempty"`
+	Items []NetworkDelayTest `json:"items,omitempty"`
 }
 
-type NetworkConnectivityTestSpec struct {
-	Layer        string                       `json:"layer"`
+type NetworkDelayTestSpec struct {
+	Protocol     string                       `json:"protocol"`
 	Source       NetworkSourceEndpoint        `json:"source"`
 	Destinations []NetworkDestinationEndpoint `json:"destinations"`
 	Frequency    string                       `json:"frequency,omitempty"`
 }
 
-type NetworkConnectivityTestStatus struct {
+type NetworkDelayTestStatus struct {
 	TestStatus *runtime.RawExtension `json:"testStatus,omitempty"`
 }

@@ -20,11 +20,11 @@ func hasEphemeralContainer(ecs []v1.EphemeralContainer, ecName string) bool {
 	return false
 }
 
-func createDebugContainerObject(name string) v1.EphemeralContainer {
+func createDebugContainerObject(name, image string) v1.EphemeralContainer {
 	return v1.EphemeralContainer{
 		EphemeralContainerCommon: v1.EphemeralContainerCommon{
 			Name:                     name,
-			Image:                    "nicolaka/netshoot", // TODO: find a better place to define the image
+			Image:                    image,
 			ImagePullPolicy:          v1.PullIfNotPresent,
 			TerminationMessagePolicy: v1.TerminationMessageReadFile,
 			Stdin:                    true,
@@ -37,8 +37,8 @@ func createDebugContainerObject(name string) v1.EphemeralContainer {
 	}
 }
 
-func CreateOrUpdateEphemeralContainer(config *rest.Config, namespace, podName, ephemeralContainerName string) error {
-	debugContainer := createDebugContainerObject(ephemeralContainerName)
+func CreateOrUpdateEphemeralContainer(config *rest.Config, namespace, podName, ephemeralContainerName, image string) error {
+	debugContainer := createDebugContainerObject(ephemeralContainerName, image)
 	client, err := clientset.NewForConfig(config)
 	if err != nil {
 		return err

@@ -94,3 +94,9 @@ type Params struct {
 	IP        string `json:"ip"`
 	Port      string `json:"port,omitempty"`
 }
+
+type NodeParams struct {
+	Name string `json:"name"`
+	IP   string `json:"ip"`
+	Port string `json:"port,omitempty"`
+}

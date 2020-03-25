@@ -35,7 +35,7 @@ kind: CertificateSigningRequest
 metadata:
   name: network-validator.default
 spec:
-  request: $(cat server.csr | base64 | tr -d '\n')
+  request: $(cat server.csr | base64 | tr -d '\r\n')
   usages:
   - digital signature
   - key encipherment

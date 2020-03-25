@@ -26,8 +26,12 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// EndpointKinds returns a EndpointKindInformer.
+	EndpointKinds() EndpointKindInformer
 	// NetworkConnectivityTests returns a NetworkConnectivityTestInformer.
 	NetworkConnectivityTests() NetworkConnectivityTestInformer
+	// NetworkDelayTests returns a NetworkDelayTestInformer.
+	NetworkDelayTests() NetworkDelayTestInformer
 	// NetworkMonitors returns a NetworkMonitorInformer.
 	NetworkMonitors() NetworkMonitorInformer
 	// NetworkNotifications returns a NetworkNotificationInformer.
@@ -47,9 +51,19 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
+// EndpointKinds returns a EndpointKindInformer.
+func (v *version) EndpointKinds() EndpointKindInformer {
+	return &endpointKindInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
 // NetworkConnectivityTests returns a NetworkConnectivityTestInformer.
 func (v *version) NetworkConnectivityTests() NetworkConnectivityTestInformer {
 	return &networkConnectivityTestInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// NetworkDelayTests returns a NetworkDelayTestInformer.
+func (v *version) NetworkDelayTests() NetworkDelayTestInformer {
+	return &networkDelayTestInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // NetworkMonitors returns a NetworkMonitorInformer.

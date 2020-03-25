@@ -23,7 +23,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 
-	networkmachineryv1alpha1 "github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -33,14 +32,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func EphemeralContainerInStatus(ctx context.Context, config *rest.Config, source *networkmachineryv1alpha1.NetworkSourceEndpoint) error {
+func EphemeralContainerInStatus(ctx context.Context, config *rest.Config, namespace string, name string) error {
 	runtimeClient, err := client.New(config, client.Options{})
 	if err != nil {
 		return errors.Wrap(err, "failed to instantiate runtime client")
 	}
 
 	pod := &corev1.Pod{}
-	if err := runtimeClient.Get(ctx, client.ObjectKey{Namespace: source.Namespace, Name: source.Name}, pod); err != nil {
+	if err := runtimeClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, pod); err != nil {
 		return errors.Wrap(err, "failed to get source pod")
 	}
 

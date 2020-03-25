@@ -28,7 +28,9 @@ import (
 
 type NetworkmachineryV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	EndpointKindsGetter
 	NetworkConnectivityTestsGetter
+	NetworkDelayTestsGetter
 	NetworkMonitorsGetter
 	NetworkNotificationsGetter
 	NetworkTrafficShapersGetter
@@ -39,8 +41,16 @@ type NetworkmachineryV1alpha1Client struct {
 	restClient rest.Interface
 }
 
+func (c *NetworkmachineryV1alpha1Client) EndpointKinds() EndpointKindInterface {
+	return newEndpointKinds(c)
+}
+
 func (c *NetworkmachineryV1alpha1Client) NetworkConnectivityTests() NetworkConnectivityTestInterface {
 	return newNetworkConnectivityTests(c)
+}
+
+func (c *NetworkmachineryV1alpha1Client) NetworkDelayTests() NetworkDelayTestInterface {
+	return newNetworkDelayTests(c)
 }
 
 func (c *NetworkmachineryV1alpha1Client) NetworkMonitors() NetworkMonitorInterface {

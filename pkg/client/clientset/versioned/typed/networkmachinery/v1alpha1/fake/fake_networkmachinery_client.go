@@ -30,8 +30,16 @@ type FakeNetworkmachineryV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeNetworkmachineryV1alpha1) EndpointKinds() v1alpha1.EndpointKindInterface {
+	return &FakeEndpointKinds{c}
+}
+
 func (c *FakeNetworkmachineryV1alpha1) NetworkConnectivityTests() v1alpha1.NetworkConnectivityTestInterface {
 	return &FakeNetworkConnectivityTests{c}
+}
+
+func (c *FakeNetworkmachineryV1alpha1) NetworkDelayTests() v1alpha1.NetworkDelayTestInterface {
+	return &FakeNetworkDelayTests{c}
 }
 
 func (c *FakeNetworkmachineryV1alpha1) NetworkMonitors() v1alpha1.NetworkMonitorInterface {

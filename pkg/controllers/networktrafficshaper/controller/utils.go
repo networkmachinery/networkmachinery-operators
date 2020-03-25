@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/networkmachinery/networkmachinery-operators/pkg/apis/networkmachinery/v1alpha1"
-
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/apimachinery"
 
 	"github.com/networkmachinery/networkmachinery-operators/pkg/utils/executor"
@@ -44,12 +42,13 @@ func shape(ctx context.Context, config *rest.Config, namespace, name, command st
 
 	if useEphemeralContainers {
 		debugContainerName := "net-debug"
-		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, namespace, name, debugContainerName); err != nil {
+		image := "nicolaka/netshoot"
+		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, namespace, name, debugContainerName, image); err != nil {
 			return err
 		}
 		execOpts.Container = debugContainerName
 
-		if err := apimachinery.EphemeralContainerInStatus(ctx, config, &v1alpha1.NetworkSourceEndpoint{Namespace: namespace, Name: name}); err != nil {
+		if err := apimachinery.EphemeralContainerInStatus(ctx, config, namespace, name); err != nil {
 			return err
 		}
 	}
