@@ -2,10 +2,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: networkconnectivity-test-controller
+  name: networkdelay-test-controller
   labels:
-    app.kubernetes.io/name: networkconnectivity-test-controller
-    helm.sh/chart: networkconnectivity-test-controller
+    app.kubernetes.io/name: networkdelay-test-controller
+    helm.sh/chart: networkdelay-test-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
 rules:
   - apiGroups:
@@ -23,8 +23,8 @@ rules:
       - networktrafficshapers
       - networkconnectivitytest/status
       - networkconnectivitytests/status
-      - networkcdelaytest/status
-      - networkcdelaytests/status
+      - networkdelaytest/status
+      - networkdelaytests/status
     verbs:
       - get
       - list
@@ -36,6 +36,7 @@ rules:
     resources:
       - pods
       - pods/log
+      - nodes
       - services
       - endpoints
     verbs:
@@ -71,8 +72,8 @@ rules:
     resources:
       - configmaps
     resourceNames:
-      - networkconnectivity-test-controller-leader-election
       - networkdelay-test-controller-leader-election
+      - networkconnectivity-test-controller-leader-election
       - sflow-controller-leader-election
       - network-control-controller-leader-election
       - network-traffic-shaper-leader-election
@@ -98,20 +99,31 @@ rules:
       - validatingwebhookconfigurations
     verbs:
       - "*"
+  - apiGroups:
+      - "apps"
+    resources:
+      - daemonsets
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: networkconnectivity-test-controller
+  name: networkdelay-test-controller
   labels:
-    app.kubernetes.io/name: networkconnectivity-test-controller
-    helm.sh/chart: networkconnectivity-test-controller
+    app.kubernetes.io/name: networkdelay-test-controller
+    helm.sh/chart: networkdelay-test-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: networkconnectivity-test-controller
+  name: networkdelay-test-controller
 subjects:
   - kind: ServiceAccount
-    name: networkconnectivity-test-controller
+    name: networkdelay-test-controller
     namespace: {{ .Release.Namespace }}

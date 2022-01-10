@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: qperf-ds
+  namespace: default
+  labels:
+    k8s-app: qperf-ds
+spec:
+  selector:
+    matchLabels:
+      name: qperf-ds
+  template:
+    metadata:
+      labels:
+        name: qperf-ds
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: net-server
+        image: docktofuture/ubuntuqperfserver:latest
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      terminationGracePeriodSeconds: 30

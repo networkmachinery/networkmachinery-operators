@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: networkdelay-test-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: networkdelay-test-controller
+    helm.sh/chart: networkdelay-test-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: networkdelay-test-controller
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: networkdelay-test-controller
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: networkdelay-test-controller
+      containers:
+        - name: networkdelay-test-controller
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /opt/networkmachinery-operators/bin/networkmachinery-hyper
+            - networkdelay-test-controller
+          ports:
+            - name: webhook-server
+              containerPort: 9876
+              protocol: TCP
+          volumeMounts:
+            - name: cert
+              mountPath: /tmp/k8s-webhook-server/serving-certs #default path
+      volumes:
+        - name: cert
+          secret:
+            secretName: {{ .Values.webhookConfig.secretName }}
+            defaultMode: 420
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.webhookConfig.secretName }}
+  namespace: {{ .Release.Namespace }}

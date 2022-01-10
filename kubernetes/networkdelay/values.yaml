@@ -1,0 +1,8 @@
+image:
+  repository: docktofuture/networkmachinery-hyper
+  tag: latest
+  pullPolicy: Always
+
+webhookConfig:
+  secretName: networkdelay-layer-validator-secret
+  serviceName: networkdelay-layer-validator-service

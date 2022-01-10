@@ -35,12 +35,13 @@ func Ping(ctx context.Context, config *rest.Config, source networkmachineryv1alp
 
 	if useEphemeralContainers {
 		debugContainerName := "net-debug"
-		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, source.Namespace, source.Name, debugContainerName); err != nil {
+		image := "nicolaka/netshoot"
+		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, source.Namespace, source.Name, debugContainerName, image); err != nil {
 			return nil, err
 		}
 		execOpts.Container = debugContainerName
 
-		if err := apimachinery.EphemeralContainerInStatus(ctx, config, &source); err != nil {
+		if err := apimachinery.EphemeralContainerInStatus(ctx, config, source.Namespace, source.Name); err != nil {
 			return nil, err
 		}
 	}
@@ -83,12 +84,13 @@ func NetCat(ctx context.Context, config *rest.Config, source networkmachineryv1a
 
 	if useEphemeralContainers {
 		debugContainerName := "net-debug"
-		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, source.Namespace, source.Name, debugContainerName); err != nil {
+		image := "nicolaka/netshoot"
+		if err := apimachinery.CreateOrUpdateEphemeralContainer(config, source.Namespace, source.Name, debugContainerName, image); err != nil {
 			return nil, err
 		}
 		execOpts.Container = debugContainerName
 
-		if err := apimachinery.EphemeralContainerInStatus(ctx, config, &source); err != nil {
+		if err := apimachinery.EphemeralContainerInStatus(ctx, config, source.Namespace, source.Name); err != nil {
 			return nil, err
 		}
 	}
